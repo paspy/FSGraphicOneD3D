@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <ctime>
+#include <d3d11.h>
 #include "XTime.h"
 
 using namespace std;
