@@ -6,4 +6,5 @@ Vertex4 sample[] = {
 	{ XMFLOAT4(-0.5,  0.5, 0, 1) , XMFLOAT4(1,0,0,1) },
 	{ XMFLOAT4( 0.5,  0.5, 0, 1) , XMFLOAT4(0,1,0,1) },
 	{ XMFLOAT4( 0.0, -0.5, 0, 1) , XMFLOAT4(0,0,1,1) }
-}
+};
+

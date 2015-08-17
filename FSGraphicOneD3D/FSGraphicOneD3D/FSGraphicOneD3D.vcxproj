@@ -23,6 +23,8 @@
     <ClCompile Include="XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Chen_Geometries.h" />
+    <ClInclude Include="Chen_GraphicTools.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -113,6 +115,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>D3D11.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

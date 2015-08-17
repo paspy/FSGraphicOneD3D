@@ -15,15 +15,11 @@
 
 #include <iostream>
 #include <ctime>
-#include <d3d11.h>
 #include "XTime.h"
+#include "Chen_GraphicTools.h"
+#include "Chen_Geometries.h"
 
 using namespace std;
-
-// BEGIN PART 1
-// TODO: PART 1 STEP 1a
-
-// TODO: PART 1 STEP 1b
 
 // TODO: PART 2 STEP 6
 
@@ -38,8 +34,15 @@ class CHEN_APP {
 	HINSTANCE						application;
 	WNDPROC							appWndProc;
 	HWND							window;
-	// TODO: PART 1 STEP 2
 
+	ID3D11Device					*clDevice			= nullptr;			// the pointer to our Direct3D device interface
+	IDXGISwapChain					*clSwapChain		= nullptr;			// the pointer to the swap chain interface
+	ID3D11DeviceContext				*clDeviceContext	= nullptr;          // the pointer to our Direct3D device context
+	ID3D11RenderTargetView			*clRenderTargetView = nullptr;			// This allows D3D to connect to your swap chain¡¯s ¡°BackBuffer¡± or any other draw-able surface.
+	DXGI_SWAP_CHAIN_DESC			clSwapChainDesc;						// create a struct to hold information about the swap chain
+	D3D11_VIEWPORT					clViewport;								// Tells D3D11 what portion of the screen/surface you want to draw to. (typically all of it)
+	
+																			
 	// TODO: PART 2 STEP 2
 
 	// BEGIN PART 5
@@ -93,12 +96,49 @@ CHEN_APP::CHEN_APP(HINSTANCE hinst, WNDPROC proc) {
 
 	ShowWindow(window, SW_SHOW);
 	//********************* END WARNING ************************//
+	
 
+	// clear out the struct for use
+	ZeroMemory(&clSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+
+	// fill the swap chain description struct
+	clSwapChainDesc.BufferCount = 1;                                    // one back buffer
+	clSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
+	clSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
+	clSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;		// Special Flags
+
+	// create a device, device context and swap chain using the information in the scd struct
 	// TODO: PART 1 STEP 3a
+#if defined(DEBUG) | defined(_DEBUG)
+	D3D11CreateDeviceAndSwapChain(NULL,
+								  D3D_DRIVER_TYPE_HARDWARE,
+								  NULL,
+								  D3D11_CREATE_DEVICE_DEBUG,
+								  NULL,
+								  NULL,
+								  D3D11_SDK_VERSION,
+								  &clSwapChainDesc,
+								  &clSwapChain,
+								  &clDevice,
+								  NULL,
+								  &clDeviceContext);
+#else
+ 	// TODO: PART 1 STEP 3b
+	D3D11CreateDeviceAndSwapChain(NULL,
+								  D3D_DRIVER_TYPE_HARDWARE,
+								  NULL,
+								  NULL,
+								  NULL,
+								  NULL,
+								  D3D11_SDK_VERSION,
+								  &clSwapChainDesc,
+								  &clSwapChain,
+								  &clDevice,
+								  NULL,
+								  &clDeviceContext);
+#endif
 
-	// TODO: PART 1 STEP 3b
-
-	// TODO: PART 1 STEP 4
+	//		TODO: PART 1 STEP 4
 
 	// TODO: PART 1 STEP 5
 
@@ -191,6 +231,12 @@ bool CHEN_APP::Run() {
 
 bool CHEN_APP::ShutDown() {
 	// TODO: PART 1 STEP 6
+	if (clSwapChain != nullptr)
+		clSwapChain->Release();
+	if (clDevice != nullptr)
+		clDevice->Release();
+	if (clDeviceContext != nullptr)
+		clDeviceContext->Release();
 
 	UnregisterClass(L"DirectXApplication", application);
 	return true;
@@ -206,6 +252,9 @@ bool CHEN_APP::ShutDown() {
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wparam, LPARAM lparam);
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int) {
+#if defined(DEBUG) | defined(_DEBUG)
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 	srand(unsigned int(time(0)));
 	CHEN_APP myApp(hInstance, (WNDPROC)WndProc);
 	MSG msg; ZeroMemory(&msg, sizeof(msg));
