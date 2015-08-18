@@ -25,6 +25,7 @@
   <ItemGroup>
     <ClInclude Include="Chen_Geometries.h" />
     <ClInclude Include="Chen_GraphicTools.h" />
+    <ClInclude Include="Chen_Utils.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

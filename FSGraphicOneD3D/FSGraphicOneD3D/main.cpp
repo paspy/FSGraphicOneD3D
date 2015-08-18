@@ -14,8 +14,10 @@
 //************************************************************
 
 #include <iostream>
+#include <sstream>
 #include <ctime>
 #include "XTime.h"
+#include "Chen_Utils.h"
 #include "Chen_GraphicTools.h"
 #include "Chen_Geometries.h"
 
@@ -30,19 +32,34 @@ using namespace std;
 //************ SIMPLE WINDOWS APP CLASS **********************
 //************************************************************
 
-class CHEN_APP {
+class CHEN_D3D_APP {
 	HINSTANCE						application;
 	WNDPROC							appWndProc;
 	HWND							window;
 
-	ID3D11Device					*clDevice			= nullptr;			// the pointer to our Direct3D device interface
-	IDXGISwapChain					*clSwapChain		= nullptr;			// the pointer to the swap chain interface
-	ID3D11DeviceContext				*clDeviceContext	= nullptr;          // the pointer to our Direct3D device context
-	ID3D11RenderTargetView			*clRenderTargetView = nullptr;			// This allows D3D to connect to your swap chain¡¯s ¡°BackBuffer¡± or any other draw-able surface.
-	DXGI_SWAP_CHAIN_DESC			clSwapChainDesc;						// create a struct to hold information about the swap chain
-	D3D11_VIEWPORT					clViewport;								// Tells D3D11 what portion of the screen/surface you want to draw to. (typically all of it)
-	
-																			
+	HRESULT							hr;
+	bool							m_appPaused;
+	bool							m_minimized;
+	bool							m_maximized;
+	bool							m_resizing;
+	UINT							m_4xMsaaQuality;
+
+	XTime							m_timer;
+
+	std::wstring					m_mainWindTitle;
+	int								m_clientWidth	= BACKBUFFER_WIDTH;
+	int								m_clientHeight	= BACKBUFFER_HEIGHT;
+	bool							m_enable4xMsaa;
+
+	ID3D11Device					*m_d3dDevice = nullptr;
+	ID3D11DeviceContext				*m_d3dImmediateContext = nullptr;
+	IDXGISwapChain					*m_swapChain = nullptr;
+	ID3D11Texture2D					*m_depthStencilBuffer = nullptr;
+	ID3D11RenderTargetView			*m_renderTargetView = nullptr;
+	ID3D11DepthStencilView			*m_depthStencilView = nullptr;
+	D3D_DRIVER_TYPE					m_d3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
+	D3D11_VIEWPORT					m_screenViewport;
+														
 	// TODO: PART 2 STEP 2
 
 	// BEGIN PART 5
@@ -58,19 +75,31 @@ class CHEN_APP {
 	// TODO: PART 3 STEP 4a
 
 public:
+
 	// BEGIN PART 2
 	// TODO: PART 2 STEP 1
 
-	CHEN_APP(HINSTANCE hinst, WNDPROC proc);
+	CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc);
 	bool Run();
 	bool ShutDown();
+	void OnResize();
+	void ShowFPS();
+	void UpdateScene(double _dt);
+	void DrawScene(); 
 };
 
 //************************************************************
 //************ CREATION OF OBJECTS & RESOURCES ***************
 //************************************************************
 
-CHEN_APP::CHEN_APP(HINSTANCE hinst, WNDPROC proc) {
+CHEN_D3D_APP::CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc) : 
+	m_mainWindTitle(L"FS Graphic I - Chen Lu"),
+	m_appPaused(false),
+	m_minimized(false),
+	m_maximized(false),
+	m_resizing(false),
+	m_enable4xMsaa(false)
+{
 	// ****************** BEGIN WARNING ***********************// 
 	// WINDOWS CODE, I DON'T TEACH THIS YOU MUST KNOW IT ALREADY! 
 	application = hinst;
@@ -90,153 +119,227 @@ CHEN_APP::CHEN_APP(HINSTANCE hinst, WNDPROC proc) {
 	RECT window_size = { 0, 0, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT };
 	AdjustWindowRect(&window_size, WS_OVERLAPPEDWINDOW, false);
 
-	window = CreateWindow(L"DirectXApplication", L"FS Graphic I - Lab - Chen Lu", WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
+	window = CreateWindow(L"DirectXApplication", m_mainWindTitle.c_str(), WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
 		CW_USEDEFAULT, CW_USEDEFAULT, window_size.right - window_size.left, window_size.bottom - window_size.top,
 		NULL, NULL, application, this);
 
 	ShowWindow(window, SW_SHOW);
 	//********************* END WARNING ************************//
 	
+	ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
+
+	UINT createDeviceFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)  
+	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+	
+
+
+	D3D_FEATURE_LEVEL featureLevel;
+	HRESULT hr = D3D11CreateDevice( NULL,                 // default adapter
+									m_d3dDriverType,
+									NULL,                 // no software device
+									createDeviceFlags,
+									NULL, 
+									NULL,              // default feature level array
+									D3D11_SDK_VERSION,
+									&m_d3dDevice,
+									&featureLevel,
+									&m_d3dImmediateContext);
+	if (FAILED(hr)) {
+		MessageBox(0, L"D3D11CreateDevice Failed.", 0, 0);
+	}
+
+	if (featureLevel != D3D_FEATURE_LEVEL_11_0) {
+		MessageBox(0, L"Direct3D Feature Level 11 unsupported.", 0, 0);
+	}
+
+	HR(m_d3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality));
+	assert(m_4xMsaaQuality > 0);
+
+
+	// create a struct to hold information about the swap chain
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 
 	// clear out the struct for use
-	ZeroMemory(&clSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 
 	// fill the swap chain description struct
-	clSwapChainDesc.BufferCount = 1;                                    // one back buffer
-	clSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
-	clSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
-	clSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;		// Special Flags
+	swapChainDesc.BufferDesc.Width = m_clientWidth;
+	swapChainDesc.BufferDesc.Height = m_clientHeight;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	if (m_enable4xMsaa) {
+		swapChainDesc.SampleDesc.Count = 4;
+		swapChainDesc.SampleDesc.Quality = m_4xMsaaQuality - 1;
+	} else {
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.SampleDesc.Quality = 0;
+	}
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = 1;
+	swapChainDesc.OutputWindow = window;
+	swapChainDesc.Windowed = true;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.Flags = 0;
 
-	// create a device, device context and swap chain using the information in the scd struct
-	// TODO: PART 1 STEP 3a
-#if defined(DEBUG) | defined(_DEBUG)
-	D3D11CreateDeviceAndSwapChain(NULL,
-								  D3D_DRIVER_TYPE_HARDWARE,
-								  NULL,
-								  D3D11_CREATE_DEVICE_DEBUG,
-								  NULL,
-								  NULL,
-								  D3D11_SDK_VERSION,
-								  &clSwapChainDesc,
-								  &clSwapChain,
-								  &clDevice,
-								  NULL,
-								  &clDeviceContext);
-#else
- 	// TODO: PART 1 STEP 3b
-	D3D11CreateDeviceAndSwapChain(NULL,
-								  D3D_DRIVER_TYPE_HARDWARE,
-								  NULL,
-								  NULL,
-								  NULL,
-								  NULL,
-								  D3D11_SDK_VERSION,
-								  &clSwapChainDesc,
-								  &clSwapChain,
-								  &clDevice,
-								  NULL,
-								  &clDeviceContext);
-#endif
+	// To correctly create the swap chain, we must use the IDXGIFactory that was
+	// used to create the device.  If we tried to use a different IDXGIFactory instance
+	// (by calling CreateDXGIFactory), we get an error: "IDXGIFactory::CreateSwapChain: 
+	// This function is being called with a device from a different IDXGIFactory."
+	IDXGIDevice* dxgiDevice = 0;
+	HR(m_d3dDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice));
 
-	//		TODO: PART 1 STEP 4
+	IDXGIAdapter* dxgiAdapter = 0;
+	HR(dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&dxgiAdapter));
 
-	// TODO: PART 1 STEP 5
+	IDXGIFactory* dxgiFactory = 0;
+	HR(dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory));
 
-	// TODO: PART 2 STEP 3a
+	HR(dxgiFactory->CreateSwapChain(m_d3dDevice, &swapChainDesc, &m_swapChain));
 
-	// BEGIN PART 4
-	// TODO: PART 4 STEP 1
+	ReleaseCOM(dxgiDevice);
+	ReleaseCOM(dxgiAdapter);
+	ReleaseCOM(dxgiFactory);
 
-	// TODO: PART 2 STEP 3b
-
-	// TODO: PART 2 STEP 3c
-
-	// TODO: PART 2 STEP 3d
-
-	// TODO: PART 5 STEP 2a
-
-	// TODO: PART 5 STEP 2b
-
-	// TODO: PART 5 STEP 3
-
-	// TODO: PART 2 STEP 5
-	// ADD SHADERS TO PROJECT, SET BUILD OPTIONS & COMPILE
-
-	// TODO: PART 2 STEP 7
-
-	// TODO: PART 2 STEP 8a
-
-	// TODO: PART 2 STEP 8b
-
-	// TODO: PART 3 STEP 3
-
-	// TODO: PART 3 STEP 4b
-
+	OnResize();
 }
 
 //************************************************************
 //************ EXECUTION *************************************
 //************************************************************
 
-bool CHEN_APP::Run() {
-	// TODO: PART 4 STEP 2	
+bool CHEN_D3D_APP::Run() {
+	m_timer.Signal();
 
-	// TODO: PART 4 STEP 3
+	if (!m_appPaused) {
+		ShowFPS();
+		UpdateScene(m_timer.Delta());
+		DrawScene();
+	} else {
+		Sleep(100);
+	}
 
-	// TODO: PART 4 STEP 5
-
-	// END PART 4
-
-	// TODO: PART 1 STEP 7a
-
-	// TODO: PART 1 STEP 7b
-
-	// TODO: PART 1 STEP 7c
-
-	// TODO: PART 5 STEP 4
-
-	// TODO: PART 5 STEP 5
-
-	// TODO: PART 5 STEP 6
-
-	// TODO: PART 5 STEP 7
-
-	// END PART 5
-
-	// TODO: PART 3 STEP 5
-
-	// TODO: PART 3 STEP 6
-
-	// TODO: PART 2 STEP 9a
-
-	// TODO: PART 2 STEP 9b
-
-	// TODO: PART 2 STEP 9c
-
-	// TODO: PART 2 STEP 9d
-
-	// TODO: PART 2 STEP 10
-
-	// END PART 2
-
-	// TODO: PART 1 STEP 8
-
-	// END OF PART 1
 	return true;
+}
+
+void CHEN_D3D_APP::UpdateScene(double _dt) {
+
+}
+
+void CHEN_D3D_APP::DrawScene() {
+	assert(m_d3dImmediateContext);
+	assert(m_swapChain);
+
+	m_d3dImmediateContext->ClearRenderTargetView(m_renderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
+	m_d3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	HR(m_swapChain->Present(0, 0));
+}
+
+void CHEN_D3D_APP::ShowFPS() {
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+
+	frameCnt++;
+
+	// Compute averages over one second period.
+	if ((m_timer.TotalTime() - timeElapsed) >= 1.0f) {
+		float fps = (float)frameCnt; // fps = frameCnt / 1
+		float mspf = 1000.0f / fps;
+
+		std::wostringstream outs;
+		outs.precision(6);
+		outs << m_mainWindTitle << L" FPS: " << fps << L" Frame Time: " << mspf << L" (ms)";
+		SetWindowText(window, outs.str().c_str());
+
+		// Reset for next average.
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+	}
+}
+
+void CHEN_D3D_APP::OnResize() {
+	assert(m_d3dImmediateContext);
+	assert(m_d3dDevice);
+	assert(m_swapChain);
+
+	// Release the old views, as they hold references to the buffers we
+	// will be destroying.  Also release the old depth/stencil buffer.
+	ReleaseCOM(m_renderTargetView);
+	ReleaseCOM(m_depthStencilView);
+	ReleaseCOM(m_depthStencilBuffer);
+
+	// Resize the swap chain and recreate the render target view.
+
+	HR(m_swapChain->ResizeBuffers(1, m_clientWidth, m_clientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+	ID3D11Texture2D* backBuffer;
+	HR(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
+	HR(m_d3dDevice->CreateRenderTargetView(backBuffer, 0, &m_renderTargetView));
+	ReleaseCOM(backBuffer);
+
+
+	// Create the depth/stencil buffer and view.
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+
+	depthStencilDesc.Width = m_clientWidth;
+	depthStencilDesc.Height = m_clientHeight;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	if (m_enable4xMsaa) {
+		depthStencilDesc.SampleDesc.Count = 4;
+		depthStencilDesc.SampleDesc.Quality = m_4xMsaaQuality - 1;
+	} else {
+		depthStencilDesc.SampleDesc.Count = 1;
+		depthStencilDesc.SampleDesc.Quality = 0;
+	}
+
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	HR(m_d3dDevice->CreateTexture2D(&depthStencilDesc, 0, &m_depthStencilBuffer));
+	HR(m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer, 0, &m_depthStencilView));
+
+	// Bind the render target view and depth/stencil view to the pipeline.
+	m_d3dImmediateContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
+
+	// Set the viewport transform.
+
+	m_screenViewport.TopLeftX = 0;
+	m_screenViewport.TopLeftY = 0;
+	m_screenViewport.Width = static_cast<float>(m_clientWidth);
+	m_screenViewport.Height = static_cast<float>(m_clientHeight);
+	m_screenViewport.MinDepth = 0.0f;
+	m_screenViewport.MaxDepth = 1.0f;
+
+	m_d3dImmediateContext->RSSetViewports(1, &m_screenViewport);
 }
 
 //************************************************************
 //************ DESTRUCTION ***********************************
 //************************************************************
 
-bool CHEN_APP::ShutDown() {
+bool CHEN_D3D_APP::ShutDown() {
 	// TODO: PART 1 STEP 6
-	if (clSwapChain != nullptr)
-		clSwapChain->Release();
-	if (clDevice != nullptr)
-		clDevice->Release();
-	if (clDeviceContext != nullptr)
-		clDeviceContext->Release();
+
+	ReleaseCOM(m_renderTargetView);
+	ReleaseCOM(m_depthStencilView);
+	ReleaseCOM(m_swapChain);
+	ReleaseCOM(m_depthStencilBuffer);
+
+	// Restore all default settings.
+	if (m_d3dImmediateContext)
+		m_d3dImmediateContext->ClearState();
+
+	ReleaseCOM(m_d3dImmediateContext);
+	ReleaseCOM(m_d3dDevice);
 
 	UnregisterClass(L"DirectXApplication", application);
 	return true;
@@ -251,12 +354,13 @@ bool CHEN_APP::ShutDown() {
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wparam, LPARAM lparam);
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int) {
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 	srand(unsigned int(time(0)));
-	CHEN_APP myApp(hInstance, (WNDPROC)WndProc);
+	CHEN_D3D_APP myApp(hInstance, (WNDPROC)WndProc);
 	MSG msg; ZeroMemory(&msg, sizeof(msg));
 	while (msg.message != WM_QUIT && myApp.Run()) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -267,6 +371,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int) {
 	myApp.ShutDown();
 	return 0;
 }
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	if (GetAsyncKeyState(VK_ESCAPE))
 		message = WM_DESTROY;

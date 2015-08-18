@@ -35,5 +35,8 @@
     <ClInclude Include="Chen_Geometries.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Chen_Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
