@@ -1,4 +1,12 @@
-#pragma once
+#ifndef CHEN_UTILS
+#define CHEN_UTILS
+
+#include <DirectXMath.h>
+
+#if defined(DEBUG) || defined(_DEBUG)
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif
 
 // Convenience macro for releasing COM objects.
 #define ReleaseCOM(x) { if(x){ x->Release(); x = nullptr; } }
@@ -31,3 +39,6 @@
 #define HR(x) (x)
 #endif
 #endif 
+
+
+#endif

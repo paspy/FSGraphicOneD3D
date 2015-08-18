@@ -21,6 +21,9 @@
 #include "Chen_GraphicTools.h"
 #include "Chen_Geometries.h"
 
+#include "Trivial_VS.csh"
+#include "Trivial_PS.csh"
+
 using namespace std;
 
 // TODO: PART 2 STEP 6
@@ -33,73 +36,63 @@ using namespace std;
 //************************************************************
 
 class CHEN_D3D_APP {
-	HINSTANCE						application;
-	WNDPROC							appWndProc;
-	HWND							window;
+	public:
+		CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc);
+		bool Run();
+		bool ShutDown();
+		void OnResize();
+		void ShowFPS();
+		void UpdateScene(double _dt);
+		void DrawScene(); 
 
-	HRESULT							hr;
-	bool							m_appPaused;
-	bool							m_minimized;
-	bool							m_maximized;
-	bool							m_resizing;
-	UINT							m_4xMsaaQuality;
+	private:
+		HINSTANCE						application;
+		WNDPROC							appWndProc;
+		HWND							window;
 
-	XTime							m_timer;
+		HRESULT							hr;
+		bool							m_appPaused				= false;
+		bool							m_minimized				= false;
+		bool							m_maximized				= false;
+		bool							m_resizing				= false;
+		bool							m_enable4xMsaa			= false;
+		UINT							m_4xMsaaQuality			= 0;
 
-	std::wstring					m_mainWindTitle;
-	int								m_clientWidth	= BACKBUFFER_WIDTH;
-	int								m_clientHeight	= BACKBUFFER_HEIGHT;
-	bool							m_enable4xMsaa;
+		XTime							m_timer;
 
-	ID3D11Device					*m_d3dDevice = nullptr;
-	ID3D11DeviceContext				*m_d3dImmediateContext = nullptr;
-	IDXGISwapChain					*m_swapChain = nullptr;
-	ID3D11Texture2D					*m_depthStencilBuffer = nullptr;
-	ID3D11RenderTargetView			*m_renderTargetView = nullptr;
-	ID3D11DepthStencilView			*m_depthStencilView = nullptr;
-	D3D_DRIVER_TYPE					m_d3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
-	D3D11_VIEWPORT					m_screenViewport;
-														
-	// TODO: PART 2 STEP 2
+		std::wstring					m_mainWindTitle			= L"Graphic I - Chen Lu";
+		int								m_clientWidth			= BACKBUFFER_WIDTH;
+		int								m_clientHeight			= BACKBUFFER_HEIGHT;
 
-	// BEGIN PART 5
-	// TODO: PART 5 STEP 1
+		ID3D11Device					*m_d3dDevice			= nullptr;
+		ID3D11DeviceContext				*m_d3dImmediateContext	= nullptr;
+		IDXGISwapChain					*m_swapChain			= nullptr;
+		ID3D11Texture2D					*m_depthStencilBuffer	= nullptr;
+		ID3D11RenderTargetView			*m_renderTargetView		= nullptr;
+		ID3D11DepthStencilView			*m_depthStencilView		= nullptr;
+		D3D_DRIVER_TYPE					m_d3dDriverType			= D3D_DRIVER_TYPE_HARDWARE;
+		D3D11_VIEWPORT					m_screenViewport;
 
-	// TODO: PART 2 STEP 4
+		ID3D11Buffer					*m_circleVB				= nullptr;
+		ID3D11InputLayout				*m_inputLayout			= nullptr;
+		ID3D11VertexShader				*m_vertexShader			= nullptr;
+		ID3D11PixelShader				*m_pixelShader			= nullptr;
 
-	// BEGIN PART 3
-	// TODO: PART 3 STEP 1
+		XMFLOAT4X4						m_world;
+		XMFLOAT4X4						m_view;
+		XMFLOAT4X4						m_proj;
+		void BuildGeometryBuffers();
+		void BuildShader();
+		void BuildVertexLayout();
 
-	// TODO: PART 3 STEP 2b
-
-	// TODO: PART 3 STEP 4a
-
-public:
-
-	// BEGIN PART 2
-	// TODO: PART 2 STEP 1
-
-	CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc);
-	bool Run();
-	bool ShutDown();
-	void OnResize();
-	void ShowFPS();
-	void UpdateScene(double _dt);
-	void DrawScene(); 
+		vector<SIMPLE_VERTEX> m_vertices;
 };
 
 //************************************************************
 //************ CREATION OF OBJECTS & RESOURCES ***************
 //************************************************************
 
-CHEN_D3D_APP::CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc) : 
-	m_mainWindTitle(L"FS Graphic I - Chen Lu"),
-	m_appPaused(false),
-	m_minimized(false),
-	m_maximized(false),
-	m_resizing(false),
-	m_enable4xMsaa(false)
-{
+CHEN_D3D_APP::CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc) {
 	// ****************** BEGIN WARNING ***********************// 
 	// WINDOWS CODE, I DON'T TEACH THIS YOU MUST KNOW IT ALREADY! 
 	application = hinst;
@@ -127,6 +120,11 @@ CHEN_D3D_APP::CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc) :
 	//********************* END WARNING ************************//
 	
 	ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
+
+	XMMATRIX I = XMMatrixIdentity();
+	XMStoreFloat4x4(&m_world, I);
+	XMStoreFloat4x4(&m_view, I);
+	XMStoreFloat4x4(&m_proj, I);
 
 	UINT createDeviceFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -206,6 +204,10 @@ CHEN_D3D_APP::CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc) :
 	ReleaseCOM(dxgiFactory);
 
 	OnResize();
+
+	BuildGeometryBuffers();
+	BuildShader();
+	BuildVertexLayout();
 }
 
 //************************************************************
@@ -234,10 +236,59 @@ void CHEN_D3D_APP::DrawScene() {
 	assert(m_d3dImmediateContext);
 	assert(m_swapChain);
 
-	m_d3dImmediateContext->ClearRenderTargetView(m_renderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
+	m_d3dImmediateContext->ClearRenderTargetView(m_renderTargetView, reinterpret_cast<const float*>(&Colors::DarkBlue));
 	m_d3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+	//m_d3dImmediateContext->IASetInputLayout(m_inputLayout);
+	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+
+	UINT stride = sizeof(SIMPLE_VERTEX);
+	UINT offset = 0;
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVB, &stride, &offset);
+
+	XMMATRIX world = XMLoadFloat4x4(&m_world);
+	XMMATRIX view = XMLoadFloat4x4(&m_view);
+	XMMATRIX proj = XMLoadFloat4x4(&m_proj);
+	XMMATRIX worldViewProj = world*view*proj;
+
+
 	HR(m_swapChain->Present(0, 0));
+}
+
+void CHEN_D3D_APP::BuildGeometryBuffers() {
+	m_vertices = DrawCircle(0, 0, 100, 50);
+
+	D3D11_BUFFER_DESC vbd;
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.ByteWidth = static_cast<UINT>(sizeof(SIMPLE_VERTEX) * m_vertices.size());
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
+	vbd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA vinitData;
+	vinitData.pSysMem = &m_vertices;
+	HR(m_d3dDevice->CreateBuffer(&vbd, &vinitData, &m_circleVB));
+}
+
+
+void CHEN_D3D_APP::BuildShader() {
+	HR(m_d3dDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &m_vertexShader));
+	HR(m_d3dDevice->CreatePixelShader(Trivial_PS, sizeof(Trivial_PS), NULL, &m_pixelShader));
+
+	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
+	m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
+
+}
+
+void CHEN_D3D_APP::BuildVertexLayout() {
+	// create input layout describing our geometry
+	D3D11_INPUT_ELEMENT_DESC vertColorLayout[] = {
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	// Create the input layout
+	//HR(m_d3dDevice->CreateInputLayout(vertColorLayout, 2, m_vertexBlob, m_vertexBlob->GetBufferSize(), &m_inputLayout));
 }
 
 void CHEN_D3D_APP::ShowFPS() {
@@ -253,7 +304,7 @@ void CHEN_D3D_APP::ShowFPS() {
 
 		std::wostringstream outs;
 		outs.precision(6);
-		outs << m_mainWindTitle << L" FPS: " << fps << L" Frame Time: " << mspf << L" (ms)";
+		outs << m_mainWindTitle << L" - FPS: " << fps << L", Time: " << mspf << L" (ms)";
 		SetWindowText(window, outs.str().c_str());
 
 		// Reset for next average.
@@ -340,6 +391,11 @@ bool CHEN_D3D_APP::ShutDown() {
 
 	ReleaseCOM(m_d3dImmediateContext);
 	ReleaseCOM(m_d3dDevice);
+
+	ReleaseCOM(m_circleVB);
+	ReleaseCOM(m_vertexShader);
+	ReleaseCOM(m_pixelShader);
+	ReleaseCOM(m_inputLayout);
 
 	UnregisterClass(L"DirectXApplication", application);
 	return true;
