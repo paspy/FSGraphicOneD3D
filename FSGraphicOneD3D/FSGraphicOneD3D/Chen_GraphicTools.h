@@ -10,22 +10,6 @@
 using namespace DirectX;
 using namespace std;
 
-
-namespace DXColors {
-	XMGLOBALCONST XMVECTORF32 White = { 1.0f, 1.0f, 1.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Black = { 0.0f, 0.0f, 0.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Red = { 1.0f, 0.0f, 0.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Green = { 0.0f, 1.0f, 0.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Blue = { 0.0f, 0.0f, 1.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Yellow = { 1.0f, 1.0f, 0.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Cyan = { 0.0f, 1.0f, 1.0f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 Magenta = { 1.0f, 0.0f, 1.0f, 1.0f };
-
-	XMGLOBALCONST XMVECTORF32 Silver = { 0.75f, 0.75f, 0.75f, 1.0f };
-	XMGLOBALCONST XMVECTORF32 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
-}
-
-
 typedef struct Vertex4 {
 	XMFLOAT3 pos;
 	XMVECTORF32 rgba;
@@ -70,7 +54,7 @@ inline float DegreesToradians(float _degree) {
 	return (_degree * XM_PI / 180.0f);
 }
 
-vector<SIMPLE_VERTEX> DrawParametricLine(const SIMPLE_VERTEX _pos0, const SIMPLE_VERTEX _pos1) {
+vector<SIMPLE_VERTEX> DrawParametricLine(const SIMPLE_VERTEX &_pos0, const SIMPLE_VERTEX &_pos1) {
 	float deltaX = abs(_pos1.pos.x - _pos0.pos.x);
 	float deltaY = abs(_pos1.pos.y - _pos0.pos.y);
 	float m = max(deltaX, deltaY);
@@ -88,7 +72,7 @@ vector<SIMPLE_VERTEX> DrawParametricLine(const SIMPLE_VERTEX _pos0, const SIMPLE
 	return verts;
 }
 
-vector<SIMPLE_VERTEX> DrawCircle(float _cx, float _cy, float _r, int _numSegments, XMVECTORF32 _color = DXColors::Yellow) {
+vector<SIMPLE_VERTEX> DrawCircle(float _cx, float _cy, float _r, int _numSegments, XMVECTORF32 _color = Colors::Yellow) {
 	vector<SIMPLE_VERTEX> verts;
 	for (int i = 0; i < _numSegments; i++) {
 		float theta = 2.0f * XM_PI * float(i) / float(_numSegments);

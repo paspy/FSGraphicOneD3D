@@ -203,11 +203,12 @@ CHEN_D3D_APP::CHEN_D3D_APP(HINSTANCE hinst, WNDPROC proc) {
 	ReleaseCOM(dxgiAdapter);
 	ReleaseCOM(dxgiFactory);
 
-	OnResize();
 
 	BuildGeometryBuffers();
 	BuildShader();
 	BuildVertexLayout();
+
+	OnResize();
 }
 
 //************************************************************
@@ -246,17 +247,18 @@ void CHEN_D3D_APP::DrawScene() {
 	UINT offset = 0;
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVB, &stride, &offset);
 
-	XMMATRIX world = XMLoadFloat4x4(&m_world);
-	XMMATRIX view = XMLoadFloat4x4(&m_view);
-	XMMATRIX proj = XMLoadFloat4x4(&m_proj);
-	XMMATRIX worldViewProj = world*view*proj;
+	//XMMATRIX world = XMLoadFloat4x4(&m_world);
+	//XMMATRIX view = XMLoadFloat4x4(&m_view);
+	//XMMATRIX proj = XMLoadFloat4x4(&m_proj);
+	//XMMATRIX worldViewProj = world*view*proj;
 
+	m_d3dImmediateContext->Draw((UINT)m_vertices.size(), 0);
 
 	HR(m_swapChain->Present(0, 0));
 }
 
 void CHEN_D3D_APP::BuildGeometryBuffers() {
-	m_vertices = DrawCircle(0, 0, 100, 50);
+	m_vertices = DrawCircle(0, 0, 5, 500);
 
 	D3D11_BUFFER_DESC vbd;
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
@@ -288,25 +290,23 @@ void CHEN_D3D_APP::BuildVertexLayout() {
 	};
 
 	// Create the input layout
-	//HR(m_d3dDevice->CreateInputLayout(vertColorLayout, 2, m_vertexBlob, m_vertexBlob->GetBufferSize(), &m_inputLayout));
+	HR(m_d3dDevice->CreateInputLayout(vertColorLayout, 2, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
+
+	m_d3dImmediateContext->IASetInputLayout(m_inputLayout);
 }
 
 void CHEN_D3D_APP::ShowFPS() {
 	static int frameCnt = 0;
 	static float timeElapsed = 0.0f;
-
 	frameCnt++;
-
 	// Compute averages over one second period.
 	if ((m_timer.TotalTime() - timeElapsed) >= 1.0f) {
 		float fps = (float)frameCnt; // fps = frameCnt / 1
 		float mspf = 1000.0f / fps;
-
 		std::wostringstream outs;
 		outs.precision(6);
 		outs << m_mainWindTitle << L" - FPS: " << fps << L", Time: " << mspf << L" (ms)";
 		SetWindowText(window, outs.str().c_str());
-
 		// Reset for next average.
 		frameCnt = 0;
 		timeElapsed += 1.0f;
@@ -331,7 +331,6 @@ void CHEN_D3D_APP::OnResize() {
 	HR(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
 	HR(m_d3dDevice->CreateRenderTargetView(backBuffer, 0, &m_renderTargetView));
 	ReleaseCOM(backBuffer);
-
 
 	// Create the depth/stencil buffer and view.
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
