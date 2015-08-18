@@ -26,6 +26,7 @@
     <ClInclude Include="Chen_Geometries.h" />
     <ClInclude Include="Chen_GraphicTools.h" />
     <ClInclude Include="Chen_Utils.h" />
+    <ClInclude Include="Mathlib.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <ItemGroup>

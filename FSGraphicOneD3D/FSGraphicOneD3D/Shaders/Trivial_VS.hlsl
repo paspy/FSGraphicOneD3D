@@ -21,10 +21,10 @@ OUTPUT_VERTEX main(INPUT_VERTEX fromVertexBuffer) {
 	sendToRasterizer.projectedCoordinate.xy = fromVertexBuffer.coordinate.xy;
 
 	// TODO : PART 4 STEP 4
-	/*sendToRasterizer.projectedCoordinate.xy += constantOffset;*/
+	sendToRasterizer.projectedCoordinate.xy += constantOffset;
 
 	// TODO : PART 3 STEP 7
-	/*sendToRasterizer.colorOut = constantColor;*/
+	sendToRasterizer.colorOut = constantColor;
 	// END PART 3
 
 	return sendToRasterizer;

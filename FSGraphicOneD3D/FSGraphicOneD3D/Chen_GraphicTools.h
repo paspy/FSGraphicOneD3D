@@ -3,33 +3,42 @@
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 #include <DirectXPackedVector.h>
-#include <DirectXCollision.h>
-#include <D3Dcompiler.h>
 #include <vector>
 
 using namespace DirectX;
 using namespace std;
 
-typedef struct Vertex4 {
-	XMFLOAT3 pos;
-	XMVECTORF32 rgba;
-}*Vertex4_ptr;
-
-typedef struct Vertex4T {
-	XMFLOAT3 pos;		// 0 byte offset
-	XMFLOAT3 normal;	// 12 byte offset
-	XMFLOAT2 tex0;		// 24 byte offset
-	XMFLOAT2 tex1;		// 32 byte offset
-	
-}*Vertex4T_ptr;
+//typedef struct Vertex4 {
+//	XMFLOAT3 pos;
+//	XMVECTORF32 rgba;
+//}*Vertex4_ptr;
+//
+//typedef struct Vertex4T {
+//	XMFLOAT3 pos;		// 0 byte offset
+//	XMFLOAT3 normal;	// 12 byte offset
+//	XMFLOAT2 tex0;		// 24 byte offset
+//	XMFLOAT2 tex1;		// 32 byte offset
+//	
+//}*Vertex4T_ptr;
 
 
 typedef struct SIMPLE_VERTEX {
-	XMFLOAT2 pos;
+	SIMPLE_VERTEX() {}
+	SIMPLE_VERTEX(XMFLOAT3 _pos, XMVECTORF32 _color) : pos(_pos), rgba(_color) { }
+	XMFLOAT3 pos;
 	XMVECTORF32 rgba;
 }*SIMPLE_VERTEX_ptr;
 
 
+// Constant Buffer Sturcture
+ID3D11Buffer*   g_pConstantBuffer = NULL;
+
+// Define the constant data used to communicate with shaders.
+typedef struct SEND_TO_VRAM {
+	XMFLOAT4 constantColor;
+	XMFLOAT2 constantOffset;
+	XMFLOAT2 padding;
+}*SEND_TO_VRAM_ptr;
 
 
 D3D11_INPUT_ELEMENT_DESC vertTexureLayout[] = {
@@ -66,6 +75,7 @@ vector<SIMPLE_VERTEX> DrawParametricLine(const SIMPLE_VERTEX &_pos0, const SIMPL
 		SIMPLE_VERTEX pixel;
 		pixel.pos.x = x;
 		pixel.pos.y = y;
+		pixel.pos.z = 0.0f;
 		pixel.rgba = _pos0.rgba;
 		verts.push_back(pixel);
 	}
@@ -74,15 +84,28 @@ vector<SIMPLE_VERTEX> DrawParametricLine(const SIMPLE_VERTEX &_pos0, const SIMPL
 
 vector<SIMPLE_VERTEX> DrawCircle(float _cx, float _cy, float _r, int _numSegments, XMVECTORF32 _color = Colors::Yellow) {
 	vector<SIMPLE_VERTEX> verts;
-	for (int i = 0; i < _numSegments; i++) {
-		float theta = 2.0f * XM_PI * float(i) / float(_numSegments);
-		float x = _r * cosf(theta); 
-		float y = _r * sinf(theta);
-		SIMPLE_VERTEX pixel;
-		pixel.pos.x = x + _cx;
-		pixel.pos.y = y + _cy;
-		pixel.rgba = _color;
-		verts.push_back(pixel);
+
+	for ( int i = 0; i < _numSegments; i++ ) {
+		SIMPLE_VERTEX vert;
+		vert.pos.x = _cx + (_r * cosf(i *  XM_2PI / _numSegments));
+		vert.pos.y = _cy + (_r * sinf(i *  XM_2PI / _numSegments));
+		vert.rgba = _color;
+		verts.push_back(vert);
+	}
+
+	return verts;
+}
+
+vector<SIMPLE_VERTEX> DrawCircle2(XMFLOAT2 _cPoint, float _radius, int _numSegments, XMVECTORF32 _color = Colors::Yellow) {
+	vector<SIMPLE_VERTEX> verts;
+	float wedgeAngle = XM_2PI / _numSegments;
+	for ( int i = 0; i < _numSegments; i++ ) {
+		SIMPLE_VERTEX vert;
+		float theta = i * wedgeAngle;
+		vert.pos.x = _cPoint.x + _radius * cosf(theta);
+		vert.pos.y = _cPoint.y - _radius * sinf(theta);
+		vert.rgba = _color;
+		verts.push_back(vert);
 	}
 	return verts;
 }
