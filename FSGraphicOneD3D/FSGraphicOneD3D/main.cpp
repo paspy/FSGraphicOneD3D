@@ -327,8 +327,8 @@ void CHEN_D3D_APP::BuildGeometryBuffers() {
 
 	for ( int i = 0; i < 361; i++ ) {
 		SIMPLE_VERTEX vert;
-		vert.pos.x = 0.95f*sinf(DegreeToRadians((float)i));
-		vert.pos.y = 0.95f*cosf(DegreeToRadians((float)i));
+		vert.pos.x = 0.99f*sinf(DegreeToRadians((float)i));
+		vert.pos.y = 0.99f*cosf(DegreeToRadians((float)i));
 		m_vertices.push_back(vert);
 	}
 
@@ -351,13 +351,10 @@ void CHEN_D3D_APP::BuildGeometryBuffers() {
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbd.CPUAccessFlags = NULL;
-	//vbd.ByteWidth = static_cast<UINT>(sizeof(sample) * 3);
 	vbd.ByteWidth = static_cast<UINT>(sizeof(SIMPLE_VERTEX) * m_vertices.size());
 	vbd.MiscFlags = 0;
-	//vbd.StructureByteStride = 0;
 	D3D11_SUBRESOURCE_DATA vinitData;
 	vinitData.pSysMem = m_vertices.data();
-	//vinitData.pSysMem = sample;
 
 	// Create Buffer
 	HR(m_d3dDevice->CreateBuffer(&vbd, &vinitData, &m_circleVertexBuffer));
