@@ -3,10 +3,10 @@
 
 #include <DirectXMath.h>
 
-#if defined(DEBUG) || defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
+//#if defined(DEBUG) || defined(_DEBUG)
+//#define _CRTDBG_MAP_ALLOC
+//#include <crtdbg.h>
+//#endif
 
 // Convenience macro for releasing COM objects.
 #define ReleaseCOM(x) { if(x){ x->Release(); x = nullptr; } }
@@ -40,5 +40,7 @@
 #endif
 #endif 
 
+#define BACKBUFFER_WIDTH	500
+#define BACKBUFFER_HEIGHT	500
 
 #endif

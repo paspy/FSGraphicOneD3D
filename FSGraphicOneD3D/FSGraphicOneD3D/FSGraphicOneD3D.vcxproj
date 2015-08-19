@@ -19,13 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="d3dApp.cpp" />
+    <ClCompile Include="LAB7.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Chen_Geometries.h" />
-    <ClInclude Include="Chen_GraphicTools.h" />
     <ClInclude Include="Chen_Utils.h" />
+    <ClInclude Include="d3dApp.h" />
+    <ClInclude Include="LAB7.h" />
     <ClInclude Include="Mathlib.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
