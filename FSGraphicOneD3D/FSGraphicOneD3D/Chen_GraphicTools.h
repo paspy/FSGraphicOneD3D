@@ -8,18 +8,18 @@
 using namespace DirectX;
 using namespace std;
 
-//typedef struct Vertex4 {
-//	XMFLOAT3 pos;
-//	XMVECTORF32 rgba;
-//}*Vertex4_ptr;
-//
-//typedef struct Vertex4T {
-//	XMFLOAT3 pos;		// 0 byte offset
-//	XMFLOAT3 normal;	// 12 byte offset
-//	XMFLOAT2 tex0;		// 24 byte offset
-//	XMFLOAT2 tex1;		// 32 byte offset
-//	
-//}*Vertex4T_ptr;
+typedef struct Vertex4 {
+	XMFLOAT3 pos;
+	XMVECTORF32 rgba;
+}*Vertex4_ptr;
+
+typedef struct Vertex4T {
+	XMFLOAT3 pos;		// 0 byte offset
+	XMFLOAT3 normal;	// 12 byte offset
+	XMFLOAT2 tex0;		// 24 byte offset
+	XMFLOAT2 tex1;		// 32 byte offset
+	
+}*Vertex4T_ptr;
 
 
 typedef struct SIMPLE_VERTEX {

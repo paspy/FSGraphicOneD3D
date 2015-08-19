@@ -7,37 +7,37 @@
 #define FAR_PLANE 10.0f
 #define NEAR_PLANE 0.1f
 
-typedef struct Vertex4 {
-	union {
-		// x y z w
-		float xyzw[4];
-		struct {
-			float x, y, z, w;
-		};
-	};
-	union {
-		float uv[2];
-		struct {
-			float u, v;
-		};
-	};
-	unsigned int color;
-}*Vertex4_ptr;
-
-typedef struct Tri {
-	Vertex4 a, b, c;
-}*Triangle_ptr;
-
-typedef union Matrix4x4 {
-	float e[16];
-
-	struct {
-		float _e11, _e12, _e13, _e14;
-		float _e21, _e22, _e23, _e24;
-		float _e31, _e32, _e33, _e34;
-		float _e41, _e42, _e43, _e44;
-	};
-}*Matrix4x4_ptr;
+//typedef struct Vertex4 {
+//	union {
+//		// x y z w
+//		float xyzw[4];
+//		struct {
+//			float x, y, z, w;
+//		};
+//	};
+//	union {
+//		float uv[2];
+//		struct {
+//			float u, v;
+//		};
+//	};
+//	unsigned int color;
+//}*Vertex4_ptr;
+//
+//typedef struct Tri {
+//	Vertex4 a, b, c;
+//}*Triangle_ptr;
+//
+//typedef union Matrix4x4 {
+//	float e[16];
+//
+//	struct {
+//		float _e11, _e12, _e13, _e14;
+//		float _e21, _e22, _e23, _e24;
+//		float _e31, _e32, _e33, _e34;
+//		float _e41, _e42, _e43, _e44;
+//	};
+//}*Matrix4x4_ptr;
 
 
 inline float DegreeToRadians(float _degree) {

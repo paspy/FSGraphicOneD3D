@@ -81,9 +81,9 @@ class CHEN_D3D_APP {
 		ID3D11VertexShader				*m_vertexShader			= nullptr;
 		ID3D11PixelShader				*m_pixelShader			= nullptr;
 
-		XMFLOAT4X4						m_world;
-		XMFLOAT4X4						m_view;
-		XMFLOAT4X4						m_proj;
+		XMFLOAT4X4						m_world;	// world matrix
+		XMFLOAT4X4						m_view;		// view matrix
+		XMFLOAT4X4						m_proj;		// projection matrix
 		void BuildGeometryBuffers();
 		void BuildShader();
 		void BuildVertexLayout();
