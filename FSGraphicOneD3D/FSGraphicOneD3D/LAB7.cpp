@@ -1,6 +1,5 @@
 #include "LAB7.h"
 #include "Mathlib.h"
-
 // shader byte code
 #include "Trivial_VS.csh"
 #include "Trivial_PS.csh"
@@ -41,6 +40,7 @@ void LAB7::OnResize() {
 void LAB7::UpdateScene(double _dt) {
 
 }
+
 
 void LAB7::DrawScene() {
 	assert(m_d3dImmediateContext);

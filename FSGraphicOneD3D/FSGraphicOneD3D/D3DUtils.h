@@ -1,5 +1,4 @@
-#ifndef CHEN_UTILS
-#define CHEN_UTILS
+#pragma once
 
 #include <DirectXMath.h>
 
@@ -42,5 +41,3 @@
 
 #define BACKBUFFER_WIDTH	500
 #define BACKBUFFER_HEIGHT	500
-
-#endif

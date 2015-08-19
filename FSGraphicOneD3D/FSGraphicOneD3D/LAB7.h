@@ -1,6 +1,6 @@
 #pragma once
-
 #include "d3dApp.h"
+
 typedef struct SIMPLE_VERTEX {
 	SIMPLE_VERTEX() {}
 	SIMPLE_VERTEX(XMFLOAT3 _pos, XMVECTORF32 _color) : pos(_pos), rgba(_color) {}
@@ -14,6 +14,7 @@ typedef struct SEND_TO_VRAM {
 	XMFLOAT2 constantOffset;
 	XMFLOAT2 padding;
 }*SEND_TO_VRAM_ptr;
+
 
 class LAB7 : public D3DApp {
 	public:

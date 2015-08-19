@@ -25,20 +25,20 @@
     <ClCompile Include="XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Chen_Utils.h" />
+    <ClInclude Include="D3DUtils.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="LAB7.h" />
     <ClInclude Include="Mathlib.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Trivial_PS.hlsl">
+    <FxCompile Include="Shaders\LAB7\Trivial_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Shaders\Trivial_VS.hlsl">
+    <FxCompile Include="Shaders\LAB7\Trivial_VS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>

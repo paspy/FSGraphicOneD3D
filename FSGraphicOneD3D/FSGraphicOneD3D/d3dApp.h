@@ -6,7 +6,7 @@
 #include <DirectXColors.h>
 #include <DirectXPackedVector.h>
 #include <vector>
-#include "Chen_Utils.h"
+#include "D3DUtils.h"
 #include "XTime.h"
 
 using namespace DirectX;

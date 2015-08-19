@@ -9,15 +9,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{c0e0eb73-934b-475d-99d5-bbb53c176a0e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="D3D">
       <UniqueIdentifier>{e2da55cf-6ebb-4e70-9d31-71b75bddf7c7}</UniqueIdentifier>
     </Filter>
     <Filter Include="LABs">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="LABs\LAB7 Shaders">
+      <UniqueIdentifier>{d7e077e7-7ca6-4706-81c3-5670bf6f5ad7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -44,19 +44,19 @@
     <ClInclude Include="Mathlib.h">
       <Filter>D3D</Filter>
     </ClInclude>
-    <ClInclude Include="Chen_Utils.h">
-      <Filter>D3D</Filter>
-    </ClInclude>
     <ClInclude Include="LAB7.h">
       <Filter>LABs</Filter>
     </ClInclude>
+    <ClInclude Include="D3DUtils.h">
+      <Filter>D3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Trivial_PS.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="Shaders\LAB7\Trivial_PS.hlsl">
+      <Filter>LABs\LAB7 Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Trivial_VS.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="Shaders\LAB7\Trivial_VS.hlsl">
+      <Filter>LABs\LAB7 Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

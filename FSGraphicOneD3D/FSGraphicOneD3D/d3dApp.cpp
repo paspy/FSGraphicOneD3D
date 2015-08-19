@@ -20,11 +20,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	return g_d3dApp->MsgProc(hWnd, message, wParam, lParam);
 }
 
-//LRESULT CALLBACK
-//WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-//	return g_d3dApp->MsgProc(hwnd, msg, wParam, lParam);
-//}
-
 D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
 	application(hinst),
 	//appWndProc(proc),
@@ -115,8 +110,8 @@ bool D3DApp::InitMainWindow() {
 }
 
 bool D3DApp::InitDirect3D() {
-	// Begin to create device and swap chains
 
+	// Begin to create device and swap chains
 	UINT createDeviceFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -133,26 +128,26 @@ bool D3DApp::InitDirect3D() {
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 
 	// fill the swap chain description struct
-	swapChainDesc.BufferDesc.Width = m_clientWidth;
-	swapChainDesc.BufferDesc.Height = m_clientHeight;
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Width						= m_clientWidth;
+	swapChainDesc.BufferDesc.Height						= m_clientHeight;
+	swapChainDesc.BufferDesc.RefreshRate.Numerator		= 60;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator	= 1;
+	swapChainDesc.BufferDesc.Format						= DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.ScanlineOrdering			= DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling					= DXGI_MODE_SCALING_UNSPECIFIED;
 	if (m_enable4xMsaa) {
-		swapChainDesc.SampleDesc.Count = 4;
-		swapChainDesc.SampleDesc.Quality = m_4xMsaaQuality - 1;
+		swapChainDesc.SampleDesc.Count					= 4;
+		swapChainDesc.SampleDesc.Quality				= m_4xMsaaQuality - 1;
 	} else {
-		swapChainDesc.SampleDesc.Count = 1;
-		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.SampleDesc.Count					= 1;
+		swapChainDesc.SampleDesc.Quality				= 0;
 	}
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.OutputWindow = window;
-	swapChainDesc.Windowed = true;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	swapChainDesc.BufferUsage							= DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount							= 1;
+	swapChainDesc.OutputWindow							= window;
+	swapChainDesc.Windowed								= true;
+	swapChainDesc.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.Flags									= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	hr = D3D11CreateDeviceAndSwapChain(
 		0,							// Default 0 Adapter
@@ -200,6 +195,7 @@ void D3DApp::OnResize() {
 
 	// Resize the swap chain and recreate the render target view.
 	HR(m_swapChain->ResizeBuffers(1, m_clientWidth, m_clientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+
 	// Backbuffer and Render Terget View Creation
 	ID3D11Texture2D *backBuffer;
 	HR(m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
@@ -289,7 +285,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 			m_timerStop = false;
 		}
 		return 0;
-
 		// WM_SIZE is sent when the user resizes the window.  
 	case WM_SIZE:
 		// Save the new client area dimensions.
@@ -306,14 +301,12 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 				m_maximized = true;
 				OnResize();
 			} else if (wParam == SIZE_RESTORED) {
-
 				// Restoring from minimized state?
 				if (m_minimized) {
 					m_appPaused = false;
 					m_minimized = false;
 					OnResize();
 				}
-
 				// Restoring from maximized state?
 				else if (m_maximized) {
 					m_appPaused = false;
