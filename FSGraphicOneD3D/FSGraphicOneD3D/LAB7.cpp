@@ -305,7 +305,6 @@ void LAB7::BuildRenderStates() {
 
 	rasterDesc.FillMode = D3D11_FILL_SOLID;
 	rasterDesc.CullMode = D3D11_CULL_NONE;
-	rasterDesc.MultisampleEnable = true;
 
 	HR(m_d3dDevice->CreateRasterizerState(&rasterDesc, &m_wireFrame));
 

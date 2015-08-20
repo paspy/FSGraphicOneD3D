@@ -213,7 +213,9 @@ void D3DApp::OnResize() {
 	depthStencilDesc.Height = m_clientHeight;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
-	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	//depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;	//	A 32-bit z-buffer format that supports 24 bits for depth and 8 bits for stencil.
+	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;	//	A single-component, 32-bit floating-point format that supports 32 bits for depth.
+
 	if (m_enable4xMsaa) {
 		depthStencilDesc.SampleDesc.Count = 4;
 		depthStencilDesc.SampleDesc.Quality = m_4xMsaaQuality - 1;
@@ -279,17 +281,14 @@ bool D3DApp::Run() {
 
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
-		// WM_ACTIVATE is sent when the window is activated or deactivated.  
-		// We pause the game when the window is deactivated and unpause it 
-		// when it becomes active.  
 	case WM_ACTIVATE:
-		if (LOWORD(wParam) == WA_INACTIVE) {
-			m_appPaused = true;
-			m_timerStop = true;
-		} else {
-			m_appPaused = false;
-			m_timerStop = false;
-		}
+		//if (LOWORD(wParam) == WA_INACTIVE) {
+		//	m_appPaused = true;
+		//	m_timerStop = true;
+		//} else {
+		//	m_appPaused = false;
+		//	m_timerStop = false;
+		//}
 		return 0;
 		// WM_SIZE is sent when the user resizes the window.  
 	case WM_SIZE:

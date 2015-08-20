@@ -13,5 +13,10 @@ struct VS_OUTPUT {
 
 float4 main(VS_OUTPUT input) : SV_TARGET{
 	//return input.outColor;
-	return ObjTexture.Sample(ObjSamplerState, input.TexCoord);
+
+	float4 diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
+
+	//clip(diffuse.a - 0.50);
+	
+	return diffuse;
 }
