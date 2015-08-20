@@ -52,7 +52,6 @@ class D3DApp {
 		HINSTANCE						application;
 		HWND							window;
 		//WNDPROC						appWndProc;
-		HRESULT							hr;
 		bool							m_appPaused;
 		bool							m_minimized;
 		bool							m_maximized;

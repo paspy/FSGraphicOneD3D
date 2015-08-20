@@ -54,8 +54,8 @@ D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
 
 D3DApp::~D3DApp() {
 	ReleaseCOM(m_renderTargetView);
-	ReleaseCOM(m_depthStencilView);
 	ReleaseCOM(m_swapChain);
+	ReleaseCOM(m_depthStencilView);
 	ReleaseCOM(m_depthStencilBuffer);
 
 	if (m_d3dImmediateContext)
@@ -153,7 +153,7 @@ bool D3DApp::InitDirect3D() {
 	swapChainDesc.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags									= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	hr = D3D11CreateDeviceAndSwapChain(
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		0,							// Default 0 Adapter
 		D3D_DRIVER_TYPE_HARDWARE,	// Driver Type
 		NULL,						// Software

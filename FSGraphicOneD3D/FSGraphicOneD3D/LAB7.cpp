@@ -36,6 +36,11 @@ LAB7::~LAB7() {
 
 	ReleaseCOM(m_cubesTexture);
 	ReleaseCOM(m_cubesTexSamplerState);
+
+
+	ReleaseCOM(m_blendTransparency);
+	ReleaseCOM(m_cwCullingMode);
+	ReleaseCOM(m_ccwCullingMode);
 }
 
 bool LAB7::Init() {
@@ -293,17 +298,54 @@ void LAB7::BuildVertexLayout() {
 }
 
 void LAB7::BuildRenderStates() {
+
+	// Raster Description	
 	D3D11_RASTERIZER_DESC rasterDesc;
 	ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
 
 	rasterDesc.FillMode = D3D11_FILL_SOLID;
 	rasterDesc.CullMode = D3D11_CULL_NONE;
+	rasterDesc.MultisampleEnable = true;
 
 	HR(m_d3dDevice->CreateRasterizerState(&rasterDesc, &m_wireFrame));
 
 	// Apply change to render state. Default: NULL
-	m_d3dImmediateContext->RSSetState(m_wireFrame);
+	//m_d3dImmediateContext->RSSetState(m_wireFrame);		- disabled when blending
 	//m_d3dImmediateContext->RSSetState(NULL);
+
+	// create blending description
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+
+	D3D11_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc;
+	ZeroMemory(&renderTargetBlendDesc, sizeof(renderTargetBlendDesc));
+
+	renderTargetBlendDesc.BlendEnable			= true;
+	renderTargetBlendDesc.SrcBlend				= D3D11_BLEND_SRC_COLOR;
+	renderTargetBlendDesc.DestBlend				= D3D11_BLEND_BLEND_FACTOR;
+	renderTargetBlendDesc.BlendOp				= D3D11_BLEND_OP_ADD;
+	renderTargetBlendDesc.SrcBlendAlpha			= D3D11_BLEND_ONE;
+	renderTargetBlendDesc.DestBlendAlpha		= D3D11_BLEND_ZERO;
+	renderTargetBlendDesc.BlendOpAlpha			= D3D11_BLEND_OP_ADD;
+	renderTargetBlendDesc.RenderTargetWriteMask = D3D10_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.RenderTarget[0] = renderTargetBlendDesc;
+
+	HR(m_d3dDevice->CreateBlendState(&blendDesc, &m_blendTransparency));
+
+	// create counter-clockwise and clockwise description
+	D3D11_RASTERIZER_DESC cmdesc;
+	ZeroMemory(&cmdesc, sizeof(D3D11_RASTERIZER_DESC));
+
+	cmdesc.FillMode = D3D11_FILL_SOLID;
+	cmdesc.CullMode = D3D11_CULL_BACK;
+
+	cmdesc.FrontCounterClockwise = true;
+	HR(m_d3dDevice->CreateRasterizerState(&cmdesc, &m_ccwCullingMode));
+
+	cmdesc.FrontCounterClockwise = false;
+	HR(m_d3dDevice->CreateRasterizerState(&cmdesc, &m_cwCullingMode));
 }
 
 
@@ -388,7 +430,10 @@ void LAB7::DrawScene() {
 	assert(m_d3dImmediateContext);
 	assert(m_swapChain);
 
+	//Refresh the render target view
 	m_d3dImmediateContext->ClearRenderTargetView(m_renderTargetView, reinterpret_cast<const float*>(&Colors::Black));
+	
+	//Refresh the Depth/Stencil view
 	m_d3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Set Shader Resources and Samplers
@@ -401,13 +446,49 @@ void LAB7::DrawScene() {
 	//memcpy(mapSubres.pData, &m_vertConstData, sizeof(m_vertConstData));
 	//m_d3dImmediateContext->Unmap(m_constantBuffer, 0);
 
+	// opaque objects drawing
+
+	//"fine-tune" the blending equation
+	float blendFactor[] = { 0.75f, 0.75f, 0.75f, 1.0f };
+
+	//Set the default blend state (no blending) for opaque objects
+	m_d3dImmediateContext->OMSetBlendState(0, 0, 0xffffffff);
+
+	//Render opaque objects//
+
+	//Set the blend state for transparent objects
+	m_d3dImmediateContext->OMSetBlendState(m_blendTransparency, blendFactor, 0xffffffff);
+
+	//*****Transparency Depth Ordering*****//
+	// Find which transparent object is further from the camera
+	// So we can render the objects in depth order to the render target
+	// Puting the objects into a vector to organize the order of distance
+	// Find distance from cube to camera
+	XMVECTOR cubePos = XMVectorZero();
+
+	cubePos = XMVector3TransformCoord(cubePos, cubeWorldMat);
+
+	float distX = XMVectorGetX(cubePos) - XMVectorGetX(camPosition);
+	float distY = XMVectorGetY(cubePos) - XMVectorGetY(camPosition);
+	float distZ = XMVectorGetZ(cubePos) - XMVectorGetZ(camPosition);
+
+	float cubeDist = distX*distX + distY*distY + distZ*distZ;
+
+
+
 	//Set the WVP matrix and send it to the constant buffe in shader
 	WVP = cubeWorldMat * camView * camProjection;
 	cbPerObj.WVP = XMMatrixTranspose(WVP);
 	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
-	// Draw thing
-	//m_d3dImmediateContext->Draw((UINT)m_vertices.size(), 0);
+
+	// Draw calls
+	// Send conterclockwise culling cube first!
+	m_d3dImmediateContext->RSSetState(m_ccwCullingMode);
+	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
+
+	// Send clockwise culling cube following the conter-colockwise culling cube!
+	m_d3dImmediateContext->RSSetState(m_cwCullingMode);
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
 
 	//Present the backbuffer to the screen
@@ -434,7 +515,7 @@ void LAB7::OnMouseMove(WPARAM _btnState, int _x, int _y) {
 		//camYaw = Mathlib::Clamp(camYaw, -XM_PI, XM_PI);
 		camPitch = Mathlib::Clamp(camPitch, -XM_PIDIV2 + 0.01f, XM_PIDIV2 - 0.01f);
 
-		std::cout << camYaw << ", " << camPitch << "\n";
+		//std::cout << camYaw << ", " << camPitch << "\n";
 
 	} 
 

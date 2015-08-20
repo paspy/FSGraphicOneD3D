@@ -37,8 +37,7 @@ int main()
 	MSG msg; 
 	ZeroMemory(&msg, sizeof(msg));
 
-	if (!lab7App.Init())
-		return 0;
+	if (!lab7App.Init()) return 0;
 
 	while (msg.message != WM_QUIT && lab7App.Run()) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {

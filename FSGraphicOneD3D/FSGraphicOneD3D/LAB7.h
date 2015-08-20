@@ -99,11 +99,16 @@ class LAB7 : public D3DApp {
 		XMMATRIX cubeWorldMat;
 
 		// Render States
-		ID3D11RasterizerState			*m_wireFrame = nullptr;
+		ID3D11RasterizerState			*m_wireFrame			= nullptr;
 
 		// texture
-		ID3D11ShaderResourceView		*m_cubesTexture = nullptr;
+		ID3D11ShaderResourceView		*m_cubesTexture			= nullptr;
 		ID3D11SamplerState				*m_cubesTexSamplerState = nullptr;
+
+		// blending transparency
+		ID3D11BlendState				*m_blendTransparency	= nullptr;
+		ID3D11RasterizerState			*m_cwCullingMode		= nullptr;
+		ID3D11RasterizerState			*m_ccwCullingMode		= nullptr;
 
 
 };
