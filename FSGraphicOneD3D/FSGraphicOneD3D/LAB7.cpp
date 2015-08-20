@@ -73,10 +73,10 @@ void LAB7::BuildCameraBuffer() {
 	// set up camera & projection mat
 	//camPosition = XMVectorSet(0.0f, 0.0f, -2.5f, 0.0f);
 	//camPosition = XMVectorSet(0.0f, 3.0f, -8.0f, 0.0f);
-	//camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
 
 	camPosition = XMVectorSet(0.0f, 0.0f, -0.5f, 1.0f);
+	camTarget = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 	camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f);
 	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
 
@@ -308,46 +308,50 @@ void LAB7::BuildRenderStates() {
 
 
 void LAB7::UpdateKeyboardInput(double _dt) {
-	static float cam_x = 0.0f;
-	static float cam_y = 0.0f;
-	static float cam_z = -0.5f;
+
 	if (GetAsyncKeyState(VK_LW)) {
-		cam_y += (float)_dt * 10.0f;
-		//m_mouseRadius -= (float)_dt * 10.0f;
-		//m_mouseRadius = Mathlib::Clamp(m_mouseRadius, -20.0f, 20.0f);
+		moveBackForward += (float)_dt * 10.0f;
 	}
+
 	if (GetAsyncKeyState(VK_LS)) {
-		//m_mouseRadius += (float)_dt * 10.0f;
-		//m_mouseRadius = Mathlib::Clamp(m_mouseRadius, -20.0f, 20.0f);
-		cam_y -= (float)_dt * 10.0f;
+		moveBackForward -= (float)_dt * 10.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LA)) {
-		cam_x -= (float)_dt * 10.0f;
+		moveLeftRight -= (float)_dt * 10.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LD)) {
-		cam_x += (float)_dt * 10.0f;
+		moveLeftRight += (float)_dt * 10.0f;
 	}
-
-	float x = cam_x*sinf(m_mouseTheta) - cam_y*cosf(m_mousePhi);
-	float y = cam_x*sinf(m_mouseTheta) - cam_y*cosf(m_mousePhi);
-	float z = cam_z;
-
-	camPosition = XMVectorSet(x, y, z, 1.0f);
 
 }
 
 void LAB7::UpdateCamera() {
-	// Update view matrix (camera)
 
-	//float cam_x = m_mouseRadius*sinf(m_mousePhi)*cosf(m_mouseTheta);
-	//float cam_z = m_mouseRadius*sinf(m_mousePhi)*sinf(m_mouseTheta);
-	//float cam_y = m_mouseRadius*cosf(m_mousePhi);
+	camRotationMatrix = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0);
+	camTarget = XMVector3TransformCoord(DefaultForward, camRotationMatrix);
 
-	camTarget = XMVectorZero();
+	camTarget = XMVector3Normalize(camTarget);
+
+	XMMATRIX RotateYTempMatrix;
+
+	RotateYTempMatrix = XMMatrixRotationY(camYaw);
+
+	camRight = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
+
+	camForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);
+
+	camUp = XMVector3TransformCoord(camUp, RotateYTempMatrix);
+
+	camPosition += moveLeftRight*camRight + moveBackForward*camForward;
+
+	camTarget += camPosition;
 
 	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
+
+	moveLeftRight = 0.0f;
+	moveBackForward = 0.0f;
 }
 
 void LAB7::UpdateScene(double _dt) {
@@ -424,26 +428,16 @@ void LAB7::OnMouseUp(WPARAM _btnState, int _x, int _y) {
 void LAB7::OnMouseMove(WPARAM _btnState, int _x, int _y) {
 	if ((MK_RBUTTON & _btnState) != 0) {
 
-		// Make each pixel correspond to a quarter of a degree.
-		float dx = XMConvertToRadians(0.25f*static_cast<float>(_x - m_lastMousePos.x));
-		float dy = XMConvertToRadians(0.25f*static_cast<float>(_y - m_lastMousePos.y));
+		camYaw +=  0.01f*(_x - m_lastMousePos.x);
+		camPitch += 0.01f*(_y - m_lastMousePos.y);
 
-		// Update angles based on input to orbit camera around box.
-		m_mouseTheta -= dx;
-		m_mousePhi -= dy;
+		//camYaw = Mathlib::Clamp(camYaw, -XM_PI, XM_PI);
+		camPitch = Mathlib::Clamp(camPitch, -XM_PIDIV2 + 0.01f, XM_PIDIV2 - 0.01f);
 
-		// Restrict the angle mPhi.
-		m_mousePhi = Mathlib::Clamp(m_mousePhi, 0.1f, XM_PI - 0.1f);
+		std::cout << camYaw << ", " << camPitch << "\n";
+
 	} 
-	//else if ((MK_LBUTTON & _btnState) != 0) {
-	//	// Make each pixel correspond to 0.005 unit in the scene.
-	//	float dx = 0.005f*static_cast<float>(_x - m_lastMousePos.x);
-	//	float dy = 0.005f*static_cast<float>(_y - m_lastMousePos.y);
-	//	// Update the camera radius based on input.
-	//	m_mouseRadius += dx - dy;
-	//	// Restrict the radius.
-	//	m_mouseRadius = Mathlib::Clamp(m_mouseRadius, 3.0f, 15.0f);
-	//}
+
 	m_lastMousePos.x = _x;
 	m_lastMousePos.y = _y;
 }

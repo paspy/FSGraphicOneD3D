@@ -81,9 +81,8 @@ class D3DApp {
 
 		// user control stuff
 		POINT							m_lastMousePos;
-		float							m_mouseTheta;
-		float							m_mousePhi;
-		float							m_mouseRadius;
+		float							m_mouseAplha;
+		float							m_mouseBeta;
 };
 
 

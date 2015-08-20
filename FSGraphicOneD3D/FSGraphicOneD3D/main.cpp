@@ -19,7 +19,7 @@ using namespace std;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-#if defined(_WINDOWS)
+#if defined(_CONSOLE)
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int)
 #else
 int main() 

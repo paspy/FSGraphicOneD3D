@@ -43,9 +43,8 @@ D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
 	m_renderTargetView(nullptr),
 	m_depthStencilView(nullptr),
 
-	m_mouseTheta(1.5f*XM_PI),
-	m_mousePhi(0.25f*XM_PI),
-	m_mouseRadius(5.0f)
+	m_mouseAplha(XM_PI),
+	m_mouseBeta(XM_PI)
 {
 	ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
 	m_lastMousePos.x = 0;
