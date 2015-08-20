@@ -239,6 +239,7 @@ void D3DApp::OnResize() {
 	m_screenViewport.TopLeftY = 0;
 	m_screenViewport.Width = static_cast<float>(m_clientWidth);
 	m_screenViewport.Height = static_cast<float>(m_clientHeight);
+
 	m_screenViewport.MinDepth = 0.0f;
 	m_screenViewport.MaxDepth = 1.0f;
 

@@ -1,19 +1,20 @@
 #pragma once
 #include "d3dApp.h"
 
-//typedef struct SIMPLE_VERTEX {
-//	SIMPLE_VERTEX() {}
-//	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
-//	XMFLOAT3 pos;
-//	XMFLOAT4 color;
-//}*SIMPLE_VERTEX_ptr;
-
 typedef struct SIMPLE_VERTEX {
 	SIMPLE_VERTEX() {}
-	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) {}
+	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
 	XMFLOAT3 pos;
-	XMFLOAT2 texCoord;
+	XMFLOAT4 color;
 }*SIMPLE_VERTEX_ptr;
+
+//typedef struct SIMPLE_VERTEX {
+//	SIMPLE_VERTEX() {}
+//	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) {}
+//	XMFLOAT3 pos;
+//	XMFLOAT2 texCoord;
+//
+//}*SIMPLE_VERTEX_ptr;
 
 // Define the constant data used to communicate with shaders.
 typedef struct SEND_TO_VRAM {
@@ -29,10 +30,10 @@ struct cbPerObject {
 };
 
 
-class LAB7 : public D3DApp {
+class LAB8 : public D3DApp {
 	public:
-		LAB7(HINSTANCE hinst);
-		~LAB7();
+		LAB8(HINSTANCE hinst);
+		~LAB8();
 
 		bool Init();
 		void OnResize();
@@ -55,16 +56,17 @@ class LAB7 : public D3DApp {
 
 	private:
 
-		ID3D11Buffer					*m_circleVertexBuffer;
-		ID3D11Buffer					*m_cubeIndexBuffer;
-		ID3D11InputLayout				*m_inputLayout;
-		ID3D11VertexShader				*m_vertexShader;
-		ID3D11PixelShader				*m_pixelShader;
+		ID3D11Buffer					*m_circleVertexBuffer = nullptr;
+		ID3D11Buffer					*m_cubeIndexBuffer = nullptr;
+		ID3D11InputLayout				*m_inputLayout = nullptr;
+		ID3D11VertexShader				*m_vertexShader = nullptr;
+		ID3D11PixelShader				*m_pixelShader = nullptr;
 
 		// deprecated and used to apply constat color to obj; Old LAB 7 stuff
 		ID3D11Buffer					*m_constantBuffer;		
 		SEND_TO_VRAM					m_vertConstData;
-		vector<SIMPLE_VERTEX>			m_vertices;
+		vector<SIMPLE_VERTEX> m_StarVerts;
+		vector<DWORD> m_StarIndices;
 
 
 		cbPerObject						cbPerObj;
@@ -96,7 +98,8 @@ class LAB7 : public D3DApp {
 		float							camPitch				= 0.0f;
 
 		// Object
-		XMMATRIX cubeWorldMat;
+		XMMATRIX starWorldMat1;
+		XMMATRIX starWorldMat2;
 
 		// Render States
 		ID3D11RasterizerState			*m_wireFrame			= nullptr;
