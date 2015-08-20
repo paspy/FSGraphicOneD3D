@@ -41,10 +41,15 @@ D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
 
 	m_depthStencilBuffer(nullptr),
 	m_renderTargetView(nullptr),
-	m_depthStencilView(nullptr) {
-	
-	ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
+	m_depthStencilView(nullptr),
 
+	m_mouseTheta(1.5f*XM_PI),
+	m_mousePhi(0.25f*XM_PI),
+	m_mouseRadius(5.0f)
+{
+	ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
+	m_lastMousePos.x = 0;
+	m_lastMousePos.y = 0;
 	g_d3dApp = this;
 }
 
@@ -262,6 +267,8 @@ bool D3DApp::Run() {
 
 	if (!m_appPaused) {
 		ShowFPS();
+		UpdateKeyboardInput(m_timer.Delta());
+		UpdateCamera();
 		UpdateScene(m_timer.Delta());
 		DrawScene();
 	} else {
@@ -321,8 +328,8 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					// the resize bars.  So instead, we reset after the user is 
 					// done resizing the window and releases the resize bars, which 
 					// sends a WM_EXITSIZEMOVE message.
-				} else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
-				{
+				} else {	
+					// API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 					OnResize();
 				}
 			}

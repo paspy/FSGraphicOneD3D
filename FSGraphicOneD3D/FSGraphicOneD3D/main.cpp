@@ -19,12 +19,12 @@ using namespace std;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-#if defined WINDOWS
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int) {
+#if defined(_WINDOWS)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int)
 #else
-int main() {
+int main() 
 #endif
-
+{
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif

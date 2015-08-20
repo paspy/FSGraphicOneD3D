@@ -36,8 +36,14 @@ class LAB7 : public D3DApp {
 
 		bool Init();
 		void OnResize();
+		void UpdateKeyboardInput(double _dt);
+		void UpdateCamera();
 		void UpdateScene(double _dt);
 		void DrawScene();
+
+		void OnMouseDown(WPARAM _btnState, int _x, int _y);
+		void OnMouseUp	(WPARAM _btnState, int _x, int _y);
+		void OnMouseMove(WPARAM _btnState, int _x, int _y);
 
 	private:
 		void BuildCameraBuffer();
@@ -51,28 +57,32 @@ class LAB7 : public D3DApp {
 
 		ID3D11Buffer					*m_circleVertexBuffer;
 		ID3D11Buffer					*m_cubeIndexBuffer;
-		ID3D11Buffer					*m_constantBuffer;
 		ID3D11InputLayout				*m_inputLayout;
 		ID3D11VertexShader				*m_vertexShader;
 		ID3D11PixelShader				*m_pixelShader;
 
+		// deprecated and used to apply constat color to obj; Old LAB 7 stuff
+		ID3D11Buffer					*m_constantBuffer;		
 		SEND_TO_VRAM					m_vertConstData;
 		vector<SIMPLE_VERTEX>			m_vertices;
 
-		cbPerObject	cbPerObj;
-		ID3D11Buffer *cbPerObjectBuffer = nullptr;
 
-		XMMATRIX WVP;
-		XMMATRIX World;
-		XMMATRIX camView;
-		XMMATRIX camProjection;
+		cbPerObject						cbPerObj;
+		ID3D11Buffer					*cbPerObjectBuffer = nullptr;
 
-		XMVECTOR camPosition;
-		XMVECTOR camTarget;
-		XMVECTOR camUp;
+		// World, View, Projection Mat
+		XMMATRIX						WVP;
+		XMMATRIX						World;
+		XMMATRIX						camView;
+		XMMATRIX						camProjection;
 
+		// Camera
+		XMVECTOR						camPosition;
+		XMVECTOR						camTarget;
+		XMVECTOR						camUp;
+
+		// Object
 		XMMATRIX cubeWorldMat;
-		float rot = 0.01f;
 
 		// Render States
 		ID3D11RasterizerState			*m_wireFrame = nullptr;

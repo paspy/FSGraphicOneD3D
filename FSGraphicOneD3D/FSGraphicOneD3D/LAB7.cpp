@@ -13,6 +13,12 @@ LAB7::LAB7(HINSTANCE hinst) : D3DApp(hinst),
 	m_vertexShader(nullptr),
 	m_pixelShader(nullptr) {
 
+	World = XMMatrixIdentity();
+	camView = XMMatrixIdentity();
+	camProjection = XMMatrixIdentity();
+
+	camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
 }
 
 LAB7::~LAB7() {
@@ -66,12 +72,13 @@ void LAB7::BuildCameraBuffer() {
 
 	// set up camera & projection mat
 	//camPosition = XMVectorSet(0.0f, 0.0f, -2.5f, 0.0f);
-	camPosition = XMVectorSet(0.0f, 3.0f, -8.0f, 0.0f);
-	camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
+	//camPosition = XMVectorSet(0.0f, 3.0f, -8.0f, 0.0f);
+	//camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
 
+	camPosition = XMVectorSet(0.0f, 0.0f, -0.5f, 1.0f);
 	camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f);
+	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
 
 }
 
@@ -289,30 +296,75 @@ void LAB7::BuildRenderStates() {
 	D3D11_RASTERIZER_DESC rasterDesc;
 	ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
 
-	rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
 	rasterDesc.CullMode = D3D11_CULL_NONE;
 
 	HR(m_d3dDevice->CreateRasterizerState(&rasterDesc, &m_wireFrame));
 
 	// Apply change to render state. Default: NULL
-	//m_d3dImmediateContext->RSSetState(m_wireFrame);
-	m_d3dImmediateContext->RSSetState(NULL);
+	m_d3dImmediateContext->RSSetState(m_wireFrame);
+	//m_d3dImmediateContext->RSSetState(NULL);
 }
 
 
-void LAB7::UpdateScene(double _dt) {
-	static double texIdx = 0;
+void LAB7::UpdateKeyboardInput(double _dt) {
+	static float cam_x = 0.0f;
+	static float cam_y = 0.0f;
+	static float cam_z = -0.5f;
+	if (GetAsyncKeyState(VK_LW)) {
+		cam_y += (float)_dt * 10.0f;
+		//m_mouseRadius -= (float)_dt * 10.0f;
+		//m_mouseRadius = Mathlib::Clamp(m_mouseRadius, -20.0f, 20.0f);
+	}
+	if (GetAsyncKeyState(VK_LS)) {
+		//m_mouseRadius += (float)_dt * 10.0f;
+		//m_mouseRadius = Mathlib::Clamp(m_mouseRadius, -20.0f, 20.0f);
+		cam_y -= (float)_dt * 10.0f;
+	}
 
-	rot += (float)_dt / 2;
+	if (GetAsyncKeyState(VK_LA)) {
+		cam_x -= (float)_dt * 10.0f;
+	}
+
+	if (GetAsyncKeyState(VK_LD)) {
+		cam_x += (float)_dt * 10.0f;
+	}
+
+	float x = cam_x*sinf(m_mouseTheta) - cam_y*cosf(m_mousePhi);
+	float y = cam_x*sinf(m_mouseTheta) - cam_y*cosf(m_mousePhi);
+	float z = cam_z;
+
+	camPosition = XMVectorSet(x, y, z, 1.0f);
+
+}
+
+void LAB7::UpdateCamera() {
+	// Update view matrix (camera)
+
+	//float cam_x = m_mouseRadius*sinf(m_mousePhi)*cosf(m_mouseTheta);
+	//float cam_z = m_mouseRadius*sinf(m_mousePhi)*sinf(m_mouseTheta);
+	//float cam_y = m_mouseRadius*cosf(m_mousePhi);
+
+	camTarget = XMVectorZero();
+
+	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
+}
+
+void LAB7::UpdateScene(double _dt) {
+
+	// Update objects
+	static double texIdx = 0;
+	static float rot = 0.00f;
+
+	rot += (float)_dt;
 
 	if (rot > 6.26f) rot = 0.0f;
 
 	texIdx += _dt;
 
 	cbPerObj.texIndex = (int)texIdx;
-	std::cout << cbPerObj.texIndex << std::endl;
 
-	if ((int)texIdx > 3)  texIdx = 0;
+	if ((int)texIdx > 3) texIdx = 0;
 
 	cubeWorldMat = XMMatrixIdentity();
 
@@ -324,6 +376,8 @@ void LAB7::UpdateScene(double _dt) {
 	XMMATRIX translationMat = XMMatrixTranslation(0.0f, 0.0f, -2.0f);
 
 	cubeWorldMat = rotationMat * translationMat;
+
+
 }
 
 void LAB7::DrawScene() {
@@ -332,17 +386,6 @@ void LAB7::DrawScene() {
 
 	m_d3dImmediateContext->ClearRenderTargetView(m_renderTargetView, reinterpret_cast<const float*>(&Colors::Black));
 	m_d3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-	// Caculate World Mat
-	//World = XMMatrixIdentity();
-	//WVP = World * camView * camProjection;
-	//cbPerObj.WVP = XMMatrixTranspose(WVP);
-	//D3D11_MAPPED_SUBRESOURCE camSubres;
-	//m_d3dImmediateContext->Map(cbPerObjectBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &camSubres);
-	//memcpy(camSubres.pData, &cbPerObj, sizeof(cbPerObj));
-	//m_d3dImmediateContext->Unmap(cbPerObjectBuffer, 0);
-	//m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	//m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
 
 	// Set Shader Resources and Samplers
 	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubesTexture);
@@ -367,5 +410,40 @@ void LAB7::DrawScene() {
 	HR(m_swapChain->Present(0, 0));
 }
 
+void LAB7::OnMouseDown(WPARAM _btnState, int _x, int _y) {
+	m_lastMousePos.x = _x;
+	m_lastMousePos.y = _y;
 
+	SetCapture(window);
+}
 
+void LAB7::OnMouseUp(WPARAM _btnState, int _x, int _y) {
+	ReleaseCapture();
+}
+
+void LAB7::OnMouseMove(WPARAM _btnState, int _x, int _y) {
+	if ((MK_RBUTTON & _btnState) != 0) {
+
+		// Make each pixel correspond to a quarter of a degree.
+		float dx = XMConvertToRadians(0.25f*static_cast<float>(_x - m_lastMousePos.x));
+		float dy = XMConvertToRadians(0.25f*static_cast<float>(_y - m_lastMousePos.y));
+
+		// Update angles based on input to orbit camera around box.
+		m_mouseTheta -= dx;
+		m_mousePhi -= dy;
+
+		// Restrict the angle mPhi.
+		m_mousePhi = Mathlib::Clamp(m_mousePhi, 0.1f, XM_PI - 0.1f);
+	} 
+	//else if ((MK_LBUTTON & _btnState) != 0) {
+	//	// Make each pixel correspond to 0.005 unit in the scene.
+	//	float dx = 0.005f*static_cast<float>(_x - m_lastMousePos.x);
+	//	float dy = 0.005f*static_cast<float>(_y - m_lastMousePos.y);
+	//	// Update the camera radius based on input.
+	//	m_mouseRadius += dx - dy;
+	//	// Restrict the radius.
+	//	m_mouseRadius = Mathlib::Clamp(m_mouseRadius, 3.0f, 15.0f);
+	//}
+	m_lastMousePos.x = _x;
+	m_lastMousePos.y = _y;
+}

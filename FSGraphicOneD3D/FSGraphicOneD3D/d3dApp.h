@@ -30,13 +30,15 @@ class D3DApp {
 
 		virtual bool Init();
 		virtual void OnResize();
+		virtual void UpdateKeyboardInput(double _dt) = 0;
+		virtual void UpdateCamera() = 0;
 		virtual void UpdateScene(double _dt) = 0;
 		virtual void DrawScene() = 0;
 		virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-		virtual void OnMouseDown(WPARAM btnState, int x, int y) {}
-		virtual void OnMouseUp(WPARAM btnState, int x, int y) {}
-		virtual void OnMouseMove(WPARAM btnState, int x, int y) {}
+		virtual void OnMouseDown(WPARAM _btnState, int _x, int _y) {}
+		virtual void OnMouseUp	(WPARAM _btnState, int _x, int _y) {}
+		virtual void OnMouseMove(WPARAM _btnState, int _x, int _y) {}
 
 		bool Run();
 
@@ -51,11 +53,11 @@ class D3DApp {
 		HWND							window;
 		//WNDPROC						appWndProc;
 		HRESULT							hr;
-		bool							m_appPaused = false;
-		bool							m_minimized = false;
-		bool							m_maximized = false;
-		bool							m_resizing = false;
-		UINT							m_4xMsaaQuality = 0;
+		bool							m_appPaused;
+		bool							m_minimized;
+		bool							m_maximized;
+		bool							m_resizing;
+		UINT							m_4xMsaaQuality;
 
 		//timer
 		XTime							m_timer;
@@ -77,6 +79,11 @@ class D3DApp {
 		ID3D11DepthStencilView			*m_depthStencilView;
 		D3D11_VIEWPORT					 m_screenViewport;	// non-pointer
 
+		// user control stuff
+		POINT							m_lastMousePos;
+		float							m_mouseTheta;
+		float							m_mousePhi;
+		float							m_mouseRadius;
 };
 
 

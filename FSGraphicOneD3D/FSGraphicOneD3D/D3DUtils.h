@@ -41,3 +41,8 @@
 
 #define BACKBUFFER_WIDTH	500
 #define BACKBUFFER_HEIGHT	500
+
+#define VK_LW 0x57
+#define VK_LS 0x53
+#define VK_LA 0x41
+#define VK_LD 0x44
