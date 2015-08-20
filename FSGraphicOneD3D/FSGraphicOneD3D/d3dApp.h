@@ -9,6 +9,9 @@
 #include "D3DUtils.h"
 #include "XTime.h"
 
+// DDS Tex loader
+#include "DDSTextureLoader/DDSTextureLoader.h"
+
 using namespace DirectX;
 using namespace std;
 

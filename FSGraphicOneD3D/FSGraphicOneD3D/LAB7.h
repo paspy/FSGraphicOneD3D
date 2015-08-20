@@ -1,11 +1,18 @@
 #pragma once
 #include "d3dApp.h"
 
+//typedef struct SIMPLE_VERTEX {
+//	SIMPLE_VERTEX() {}
+//	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
+//	XMFLOAT3 pos;
+//	XMFLOAT4 color;
+//}*SIMPLE_VERTEX_ptr;
+
 typedef struct SIMPLE_VERTEX {
 	SIMPLE_VERTEX() {}
-	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color){}
+	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) {}
 	XMFLOAT3 pos;
-	XMFLOAT4 color;
+	XMFLOAT2 texCoord;
 }*SIMPLE_VERTEX_ptr;
 
 // Define the constant data used to communicate with shaders.
@@ -18,6 +25,7 @@ typedef struct SEND_TO_VRAM {
 
 struct cbPerObject {
 	XMMATRIX WVP;
+	int texIndex;
 };
 
 
@@ -34,6 +42,7 @@ class LAB7 : public D3DApp {
 	private:
 		void BuildCameraBuffer();
 		void BuildGeometryBuffers();
+		void BuildTextureAndState();
 		void BuildShader();
 		void BuildVertexLayout();
 		void BuildRenderStates();
@@ -50,7 +59,6 @@ class LAB7 : public D3DApp {
 		SEND_TO_VRAM					m_vertConstData;
 		vector<SIMPLE_VERTEX>			m_vertices;
 
-		
 		cbPerObject	cbPerObj;
 		ID3D11Buffer *cbPerObjectBuffer = nullptr;
 
@@ -68,5 +76,10 @@ class LAB7 : public D3DApp {
 
 		// Render States
 		ID3D11RasterizerState			*m_wireFrame = nullptr;
+
+		// texture
+		ID3D11ShaderResourceView		*m_cubesTexture = nullptr;
+		ID3D11SamplerState				*m_cubesTexSamplerState = nullptr;
+
 
 };
