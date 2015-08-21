@@ -1,4 +1,4 @@
-#include "LAB7.h"
+#include "LAB10.h"
 #include "Mathlib.h"
 // shader byte code
 #include "Trivial_VS.csh"
@@ -6,8 +6,9 @@
 
 #include <iostream>
 
-LAB7::LAB7(HINSTANCE hinst) : D3DApp(hinst),
+LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
 	m_circleVertexBuffer(nullptr),
+	m_gridVertexBuffer(nullptr),
 	m_constantBuffer(nullptr),
 	m_inputLayout(nullptr),
 	m_vertexShader(nullptr),
@@ -21,8 +22,9 @@ LAB7::LAB7(HINSTANCE hinst) : D3DApp(hinst),
 
 }
 
-LAB7::~LAB7() {
+LAB10::~LAB10() {
 	ReleaseCOM(m_circleVertexBuffer);
+	ReleaseCOM(m_gridVertexBuffer);
 	ReleaseCOM(m_constantBuffer);
 	ReleaseCOM(m_vertexShader);
 	ReleaseCOM(m_pixelShader);
@@ -43,7 +45,7 @@ LAB7::~LAB7() {
 	ReleaseCOM(m_ccwCullingMode);
 }
 
-bool LAB7::Init() {
+bool LAB10::Init() {
 	if (!D3DApp::Init())
 		return false;
 
@@ -57,12 +59,12 @@ bool LAB7::Init() {
 	return true;
 }
 
-void LAB7::OnResize() {
+void LAB10::OnResize() {
 	D3DApp::OnResize();
 
 }
 
-void LAB7::BuildCameraBuffer() {
+void LAB10::BuildCameraBuffer() {
 	D3D11_BUFFER_DESC cbbd;
 	ZeroMemory(&cbbd, sizeof(D3D11_BUFFER_DESC));
 
@@ -87,50 +89,8 @@ void LAB7::BuildCameraBuffer() {
 
 }
 
-void LAB7::BuildGeometryBuffers() {
-	//m_vertices.clear();
-	//// build circle
-	//for (int i = 0; i < 361; i++) {
-	//	SIMPLE_VERTEX vert;
-	//	vert.pos.x = 0.99f*sinf(DegreeToRadians((float)i));
-	//	vert.pos.y = 0.99f*cosf(DegreeToRadians((float)i));
-	//	vert.pos.z = 0.5f;
-	//	XMStoreFloat4(&vert.color, Colors::Yellow);
-	//	m_vertices.push_back(vert);
-	//}
-
-	//SIMPLE_VERTEX cubeVerteces[] = {
-	//	SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)), // 0
-	//	SIMPLE_VERTEX(XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)), // 1
-	//	SIMPLE_VERTEX(XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)), // 2
-	//	SIMPLE_VERTEX(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f)), // 3
-	//	SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f)), // 4
-	//	SIMPLE_VERTEX(XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)), // 5
-	//	SIMPLE_VERTEX(XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f)), // 6
-	//	SIMPLE_VERTEX(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)), // 7
-	//};
-
-	//DWORD cubeIndices[] = {
-	//	// front face
-	//	0, 1, 2,
-	//	0, 2, 3,
-	//	// back face
-	//	4, 6, 5,
-	//	4, 7, 6,
-	//	// left face
-	//	4, 5, 1,
-	//	4, 1, 0,
-	//	// right face
-	//	3, 2, 6,
-	//	3, 6, 7,
-	//	// top face
-	//	1, 5, 6,
-	//	1, 6, 2,
-	//	// bottom face
-	//	4, 0, 3,
-	//	4, 3, 7
-	//};
-
+void LAB10::BuildGeometryBuffers() {
+	
 	// Clockwise
 	SIMPLE_VERTEX cubeVerteces[] = {
 		// Front Face
@@ -196,22 +156,6 @@ void LAB7::BuildGeometryBuffers() {
 		20, 22, 23
 	};
 
-
-	//XMStoreFloat4(&m_vertConstData.constantColor, Colors::Yellow);
-	//m_vertConstData.constantOffset = { 0, 0 };
-	//D3D11_BUFFER_DESC consBufferDesc;
-	//consBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	//consBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//consBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	//consBufferDesc.MiscFlags = 0;
-	//consBufferDesc.StructureByteStride = 0;
-	//consBufferDesc.ByteWidth = sizeof(SEND_TO_VRAM);
-	//// Create Constant Buffer
-	//HR(m_d3dDevice->CreateBuffer(&consBufferDesc, NULL, &m_constantBuffer));
-	//// Set Constant buffer
-	//m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_constantBuffer);
-
-
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
 
@@ -243,13 +187,43 @@ void LAB7::BuildGeometryBuffers() {
 	// Create Verteces Buffer
 	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vinitData, &m_circleVertexBuffer));
 	// Set verteces buffer
-	UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
-	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVertexBuffer, &stride, &offset);
+	//UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
+	//m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVertexBuffer, &stride, &offset);
 
-	m_d3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
+	BuildGridBuffers();
 }
 
-void LAB7::BuildTextureAndState() {
+void LAB10::BuildGridBuffers() {
+
+	for (int i = -10; i <= 10; i++) {
+		XMFLOAT4 color;
+		XMStoreFloat4(&color, Colors::LightGreen);
+		SIMPLE_VERTEX vert1(XMFLOAT3((float)i, -1.0f, +10.0f), color);
+		SIMPLE_VERTEX vert2(XMFLOAT3((float)i, -1.0f, -10.0f), color);
+		SIMPLE_VERTEX vert3(XMFLOAT3(+10.0f, -1.0f, (float)i), color);
+		SIMPLE_VERTEX vert4(XMFLOAT3(-10.0f, -1.0f, (float)i), color);
+		m_gridVerts.push_back(vert1);
+		m_gridVerts.push_back(vert2);
+		m_gridVerts.push_back(vert3);
+		m_gridVerts.push_back(vert4);
+	}
+
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = NULL;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(SIMPLE_VERTEX) * m_gridVerts.size());
+
+	D3D11_SUBRESOURCE_DATA vinitData;
+	vinitData.pSysMem = m_gridVerts.data();
+
+	// Create Verteces Buffer
+	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vinitData, &m_gridVertexBuffer));
+}
+
+void LAB10::BuildTextureAndState() {
 
 	// load texture from file
 	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/numbers_test.dds", NULL, &m_cubesTexture));
@@ -271,7 +245,7 @@ void LAB7::BuildTextureAndState() {
 
 }
 
-void LAB7::BuildShader() {
+void LAB10::BuildShader() {
 	HR(m_d3dDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &m_vertexShader));
 	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
 
@@ -280,24 +254,21 @@ void LAB7::BuildShader() {
 
 }
 
-void LAB7::BuildVertexLayout() {
-	// create input layout describing our geometry
-	//D3D11_INPUT_ELEMENT_DESC vertLayout[] = {
-	//	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//	{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	//};
+void LAB10::BuildVertexLayout() {
+
 	D3D11_INPUT_ELEMENT_DESC vertLayout[] = {
 		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	// Create the input layout
-	HR(m_d3dDevice->CreateInputLayout(vertLayout, 2, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
+	HR(m_d3dDevice->CreateInputLayout(vertLayout, 3, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
 	m_d3dImmediateContext->IASetInputLayout(m_inputLayout);
 
 }
 
-void LAB7::BuildRenderStates() {
+void LAB10::BuildRenderStates() {
 
 	// Raster Description	
 	D3D11_RASTERIZER_DESC rasterDesc;
@@ -305,6 +276,7 @@ void LAB7::BuildRenderStates() {
 
 	rasterDesc.FillMode = D3D11_FILL_SOLID;
 	rasterDesc.CullMode = D3D11_CULL_NONE;
+	rasterDesc.AntialiasedLineEnable = true;
 
 	HR(m_d3dDevice->CreateRasterizerState(&rasterDesc, &m_wireFrame));
 
@@ -347,8 +319,7 @@ void LAB7::BuildRenderStates() {
 	HR(m_d3dDevice->CreateRasterizerState(&cmdesc, &m_cwCullingMode));
 }
 
-
-void LAB7::UpdateKeyboardInput(double _dt) {
+void LAB10::UpdateKeyboardInput(double _dt) {
 
 	if (GetAsyncKeyState(VK_LW)) {
 		moveBackForward += (float)_dt * 10.0f;
@@ -368,7 +339,7 @@ void LAB7::UpdateKeyboardInput(double _dt) {
 
 }
 
-void LAB7::UpdateCamera() {
+void LAB10::UpdateCamera() {
 
 	camRotationMatrix = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0);
 	camTarget = XMVector3TransformCoord(DefaultForward, camRotationMatrix);
@@ -379,14 +350,14 @@ void LAB7::UpdateCamera() {
 
 	RotateYTempMatrix = XMMatrixRotationY(camYaw);
 
+	//camForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);	// walk on ground
+
+	camForward = camTarget;
+
 	camRight = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
 
-	camForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);
-
 	camUp = XMVector3TransformCoord(camUp, RotateYTempMatrix);
-
 	camPosition += moveLeftRight*camRight + moveBackForward*camForward;
-
 	camTarget += camPosition;
 
 	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
@@ -395,7 +366,7 @@ void LAB7::UpdateCamera() {
 	moveBackForward = 0.0f;
 }
 
-void LAB7::UpdateScene(double _dt) {
+void LAB10::UpdateScene(double _dt) {
 
 	// Update objects
 	static double texIdx = 0;
@@ -412,6 +383,7 @@ void LAB7::UpdateScene(double _dt) {
 	if ((int)texIdx > 3) texIdx = 0;
 
 	cubeWorldMat = XMMatrixIdentity();
+	gridWorldMat = XMMatrixIdentity();
 
 	XMVECTOR rotAxis_X = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR rotAxis_Y = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -425,7 +397,7 @@ void LAB7::UpdateScene(double _dt) {
 
 }
 
-void LAB7::DrawScene() {
+void LAB10::DrawScene() {
 	assert(m_d3dImmediateContext);
 	assert(m_swapChain);
 
@@ -438,12 +410,6 @@ void LAB7::DrawScene() {
 	// Set Shader Resources and Samplers
 	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubesTexture);
 	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubesTexSamplerState);
-
-	// Map & Unmap Constant Buffer
-	//D3D11_MAPPED_SUBRESOURCE mapSubres;
-	//m_d3dImmediateContext->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapSubres);
-	//memcpy(mapSubres.pData, &m_vertConstData, sizeof(m_vertConstData));
-	//m_d3dImmediateContext->Unmap(m_constantBuffer, 0);
 
 	// opaque objects drawing
 
@@ -473,8 +439,6 @@ void LAB7::DrawScene() {
 
 	float cubeDist = distX*distX + distY*distY + distZ*distZ;
 
-
-
 	//Set the WVP matrix and send it to the constant buffe in shader
 	WVP = cubeWorldMat * camView * camProjection;
 	cbPerObj.WVP = XMMatrixTranspose(WVP);
@@ -482,6 +446,11 @@ void LAB7::DrawScene() {
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
 
 	// Draw calls
+		// draw two cubes
+	UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVertexBuffer, &stride, &offset);
+	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	// Send conterclockwise culling cube first!
 	m_d3dImmediateContext->RSSetState(m_ccwCullingMode);
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
@@ -490,32 +459,38 @@ void LAB7::DrawScene() {
 	m_d3dImmediateContext->RSSetState(m_cwCullingMode);
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
 
+
+		// Draw Grid
+	WVP = gridWorldMat * camView * camProjection;
+	cbPerObj.WVP = XMMatrixTranspose(WVP);
+	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
+	m_d3dImmediateContext->RSSetState(m_wireFrame);	// Set raster setting
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_gridVertexBuffer, &stride, &offset);
+	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	m_d3dImmediateContext->Draw((UINT)m_gridVerts.size(), 0);
 	//Present the backbuffer to the screen
 	HR(m_swapChain->Present(0, 0));
 }
 
-void LAB7::OnMouseDown(WPARAM _btnState, int _x, int _y) {
+void LAB10::OnMouseDown(WPARAM _btnState, int _x, int _y) {
 	m_lastMousePos.x = _x;
 	m_lastMousePos.y = _y;
 
 	SetCapture(window);
 }
 
-void LAB7::OnMouseUp(WPARAM _btnState, int _x, int _y) {
+void LAB10::OnMouseUp(WPARAM _btnState, int _x, int _y) {
 	ReleaseCapture();
 }
 
-void LAB7::OnMouseMove(WPARAM _btnState, int _x, int _y) {
+void LAB10::OnMouseMove(WPARAM _btnState, int _x, int _y) {
 	if ((MK_RBUTTON & _btnState) != 0) {
 
 		camYaw +=  0.01f*(_x - m_lastMousePos.x);
 		camPitch += 0.01f*(_y - m_lastMousePos.y);
 
-		//camYaw = Mathlib::Clamp(camYaw, -XM_PI, XM_PI);
 		camPitch = Mathlib::Clamp(camPitch, -XM_PIDIV2 + 0.01f, XM_PIDIV2 - 0.01f);
-
-		//std::cout << camYaw << ", " << camPitch << "\n";
-
 	} 
 
 	m_lastMousePos.x = _x;

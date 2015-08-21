@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include <ctime>
-#include "LAB7.h"
+#include "LAB10.h"
 
 using namespace std;
 
@@ -32,14 +32,14 @@ int main()
 	srand(unsigned int(time(0)));
 
 	
-	LAB7 lab7App(GetModuleHandle(NULL));
+	LAB10 LAB10App(GetModuleHandle(NULL));
 
 	MSG msg; 
 	ZeroMemory(&msg, sizeof(msg));
 
-	if (!lab7App.Init()) return 0;
+	if (!LAB10App.Init()) return 0;
 
-	while (msg.message != WM_QUIT && lab7App.Run()) {
+	while (msg.message != WM_QUIT && LAB10App.Run()) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);

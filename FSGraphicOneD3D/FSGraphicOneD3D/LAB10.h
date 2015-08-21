@@ -10,8 +10,10 @@
 
 typedef struct SIMPLE_VERTEX {
 	SIMPLE_VERTEX() {}
-	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) {}
+	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) { XMStoreFloat4(&color,Colors::Black); }
+	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
 	XMFLOAT3 pos;
+	XMFLOAT4 color;
 	XMFLOAT2 texCoord;
 }*SIMPLE_VERTEX_ptr;
 
@@ -29,10 +31,10 @@ struct cbPerObject {
 };
 
 
-class LAB7 : public D3DApp {
+class LAB10 : public D3DApp {
 	public:
-		LAB7(HINSTANCE hinst);
-		~LAB7();
+		LAB10(HINSTANCE hinst);
+		~LAB10();
 
 		bool Init();
 		void OnResize();
@@ -45,9 +47,12 @@ class LAB7 : public D3DApp {
 		void OnMouseUp	(WPARAM _btnState, int _x, int _y);
 		void OnMouseMove(WPARAM _btnState, int _x, int _y);
 
+		void SetCamProj(XMMATRIX _c) { camProjection = _c; }
+
 	private:
 		void BuildCameraBuffer();
 		void BuildGeometryBuffers();
+		void BuildGridBuffers();
 		void BuildTextureAndState();
 		void BuildShader();
 		void BuildVertexLayout();
@@ -56,6 +61,7 @@ class LAB7 : public D3DApp {
 	private:
 
 		ID3D11Buffer					*m_circleVertexBuffer;
+		ID3D11Buffer					*m_gridVertexBuffer;
 		ID3D11Buffer					*m_cubeIndexBuffer;
 		ID3D11InputLayout				*m_inputLayout;
 		ID3D11VertexShader				*m_vertexShader;
@@ -64,8 +70,6 @@ class LAB7 : public D3DApp {
 		// deprecated and used to apply constat color to obj; Old LAB 7 stuff
 		ID3D11Buffer					*m_constantBuffer;		
 		SEND_TO_VRAM					m_vertConstData;
-		vector<SIMPLE_VERTEX>			m_vertices;
-
 
 		cbPerObject						cbPerObj;
 		ID3D11Buffer					*cbPerObjectBuffer = nullptr;
@@ -96,7 +100,9 @@ class LAB7 : public D3DApp {
 		float							camPitch				= 0.0f;
 
 		// Object
+		vector<SIMPLE_VERTEX>			m_gridVerts;
 		XMMATRIX cubeWorldMat;
+		XMMATRIX gridWorldMat;
 
 		// Render States
 		ID3D11RasterizerState			*m_wireFrame			= nullptr;

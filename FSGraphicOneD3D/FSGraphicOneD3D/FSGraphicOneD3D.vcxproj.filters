@@ -33,14 +33,14 @@
     <ClCompile Include="XTime.cpp">
       <Filter>D3D</Filter>
     </ClCompile>
-    <ClCompile Include="LAB7.cpp">
-      <Filter>LABs</Filter>
-    </ClCompile>
     <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
       <Filter>D3D\DDSLoader</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader\pch.cpp">
       <Filter>D3D\DDSLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="LAB10.cpp">
+      <Filter>LABs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -52,9 +52,6 @@
     </ClInclude>
     <ClInclude Include="Mathlib.h">
       <Filter>D3D</Filter>
-    </ClInclude>
-    <ClInclude Include="LAB7.h">
-      <Filter>LABs</Filter>
     </ClInclude>
     <ClInclude Include="D3DUtils.h">
       <Filter>D3D</Filter>
@@ -73,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="DDSTextureLoader\PlatformHelpers.h">
       <Filter>D3D\DDSLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="LAB10.h">
+      <Filter>LABs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

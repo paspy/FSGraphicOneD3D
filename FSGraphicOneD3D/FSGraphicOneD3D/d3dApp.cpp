@@ -1,4 +1,5 @@
 #include "d3dApp.h"
+#include "LAB10.h"
 
 #include <Windowsx.h>
 #include <sstream>
@@ -153,9 +154,33 @@ bool D3DApp::InitDirect3D() {
 	swapChainDesc.SwapEffect							= DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags									= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
+	IDXGIFactory *factoryPtr = nullptr;
+	IDXGIAdapter *adapterPtr = nullptr;
+	std::vector<IDXGIAdapter *> adapters;
+
+	CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&factoryPtr);
+
+	UINT bestAdapterIndex = 0;
+	size_t bestMemSize = 0;
+
+	for (UINT i = 0;
+	factoryPtr->EnumAdapters(i, &adapterPtr) != DXGI_ERROR_NOT_FOUND;
+		++i) {
+		adapters.push_back(adapterPtr);
+		DXGI_ADAPTER_DESC desc;
+		adapterPtr->GetDesc(&desc);
+
+		if (desc.DedicatedVideoMemory > bestMemSize) {
+			bestAdapterIndex = i;
+			bestMemSize = desc.DedicatedVideoMemory;
+		}
+	}
+
+	ReleaseCOM(factoryPtr);
+
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		0,							// Default 0 Adapter
-		D3D_DRIVER_TYPE_HARDWARE,	// Driver Type
+		adapters[bestAdapterIndex],	// Multiple adapters
+		D3D_DRIVER_TYPE_UNKNOWN,	// Driver Type If you specify the adapter, you cannot specify the driver type
 		NULL,						// Software
 		createDeviceFlags,			// Flags
 		&FeatureLevelsRequested,	// Feature Levels Requested Pointer
@@ -243,6 +268,13 @@ void D3DApp::OnResize() {
 	m_screenViewport.MaxDepth = 1.0f;
 
 	m_d3dImmediateContext->RSSetViewports(1, &m_screenViewport);
+
+	LAB10 *lab10 = nullptr;
+	lab10 = dynamic_cast<LAB10*>(g_d3dApp);
+
+	if (lab10) {
+		lab10->SetCamProj(XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f));
+	}
 }
 
 void D3DApp::ShowFPS() {
@@ -318,6 +350,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					m_maximized = false;
 					OnResize();
 				} else if (m_resizing) {
+					int x = 0;
 					// If user is dragging the resize bars, we do not resize 
 					// the buffers here because as the user continuously 
 					// drags the resize bars, a stream of WM_SIZE messages are
