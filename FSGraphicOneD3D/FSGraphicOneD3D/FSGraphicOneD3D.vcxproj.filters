@@ -16,11 +16,8 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="LABs\LAB7 Shaders">
+    <Filter Include="LABs\LAB9 Shaders">
       <UniqueIdentifier>{d7e077e7-7ca6-4706-81c3-5670bf6f5ad7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="D3D\DDSLoader">
-      <UniqueIdentifier>{06efebe7-5aa4-4682-9717-9dd31d8bee16}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -32,12 +29,6 @@
     </ClCompile>
     <ClCompile Include="XTime.cpp">
       <Filter>D3D</Filter>
-    </ClCompile>
-    <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClCompile>
-    <ClCompile Include="DDSTextureLoader\pch.cpp">
-      <Filter>D3D\DDSLoader</Filter>
     </ClCompile>
     <ClCompile Include="LAB9.cpp">
       <Filter>LABs</Filter>
@@ -56,31 +47,22 @@
     <ClInclude Include="D3DUtils.h">
       <Filter>D3D</Filter>
     </ClInclude>
-    <ClInclude Include="DDSTextureLoader\dds.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\DirectXHelpers.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\pch.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\PlatformHelpers.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
     <ClInclude Include="LAB9.h">
+      <Filter>LABs</Filter>
+    </ClInclude>
+    <ClInclude Include="teapot.h">
+      <Filter>LABs</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Tron.h">
       <Filter>LABs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\LAB7\Trivial_PS.hlsl">
-      <Filter>LABs\LAB7 Shaders</Filter>
+      <Filter>LABs\LAB9 Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\LAB7\Trivial_VS.hlsl">
-      <Filter>LABs\LAB7 Shaders</Filter>
+      <Filter>LABs\LAB9 Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

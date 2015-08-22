@@ -38,22 +38,22 @@ SamplerState ObjSamplerState;
 
 struct VS_OUTPUT {
 	float4 outPos : SV_POSITION;
-	float4 outColor : COLOR;
-	float2 TexCoord : TEXCOORD;
+	float4 TexCoord : TEXCOORD;
+	float4 outNormal : NORMAL;
 };
 
 
 //VS_OUTPUT main(float4 inPos : POSITION, float4 inColor : COLOR) {
-VS_OUTPUT main(float4 inPos : POSITION, float4 inColor : COLOR ,float2 inTexCoord : TEXCOORD) {
+VS_OUTPUT main(float4 inPos : POSITION, float4 inTexCoord : TEXCOORD, float4 inNormal : NORMAL) {
 	VS_OUTPUT output;
 
 	output.outPos = mul(inPos, WVP);
 	
-	output.outColor = inColor;
+	output.outNormal = inNormal;
 
 	output.TexCoord = inTexCoord;
 
-	output.TexCoord.x += 0.25 * texIndex;
+	//output.TexCoord.x += 0.25 * texIndex;
 
 	return output;
 }

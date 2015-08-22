@@ -7,25 +7,22 @@ SamplerState ObjSamplerState;
 
 struct VS_OUTPUT {
 	float4 outPos : SV_POSITION;
-	float4 outColor : COLOR;
-	float2 TexCoord : TEXCOORD;
+	float4 TexCoord : TEXCOORD;
+	float4 outNormal : NORMAL;
 };
 
 float4 main(VS_OUTPUT input) : SV_TARGET{
 	//return input.outColor;
 
-
 	float4 diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
+	float4 colorSwaped;
+	colorSwaped.a = diffuse.b;
+	colorSwaped.r = diffuse.g;
+	colorSwaped.g = diffuse.r;
+	colorSwaped.b = diffuse.a;
 
 	//clip(diffuse.a - 0.50);
 
-	if (input.outColor.x == 0 &&
-		input.outColor.y == 0 &&
-		input.outColor.z == 0 &&
-		input.outColor.w == 1 ) {
-		return diffuse;
-	} else {
-		return input.outColor;
-	}
-
+	return colorSwaped;
+	//return float4(1,0,0,1);
 }

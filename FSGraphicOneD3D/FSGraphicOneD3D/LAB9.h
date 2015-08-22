@@ -109,6 +109,7 @@ class LAB9 : public D3DApp {
 
 		// texture
 		ID3D11ShaderResourceView		*m_cubesTexture			= nullptr;
+		ID3D11Texture2D					*m_cubesTexture2D		= nullptr;
 		ID3D11SamplerState				*m_cubesTexSamplerState = nullptr;
 
 		// blending transparency

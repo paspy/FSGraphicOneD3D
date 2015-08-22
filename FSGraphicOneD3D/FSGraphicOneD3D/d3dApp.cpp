@@ -179,8 +179,8 @@ bool D3DApp::InitDirect3D() {
 	ReleaseCOM(factoryPtr);
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		adapters[bestAdapterIndex],	// Multiple adapters
-		D3D_DRIVER_TYPE_UNKNOWN,	// Driver Type If you specify the adapter, you cannot specify the driver type
+		0,							// default adapters
+		D3D_DRIVER_TYPE_HARDWARE,	// Driver Type If you specify the adapter, you cannot specify the driver type
 		NULL,						// Software
 		createDeviceFlags,			// Flags
 		&FeatureLevelsRequested,	// Feature Levels Requested Pointer
@@ -268,7 +268,11 @@ void D3DApp::OnResize() {
 	m_screenViewport.MaxDepth = 1.0f;
 
 	m_d3dImmediateContext->RSSetViewports(1, &m_screenViewport);
-
+	LAB9 *abc = nullptr;
+	abc = dynamic_cast<LAB9*> (g_d3dApp);
+	if ( abc ) {
+		abc->SetCamProj(XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f));
+	}
 }
 
 void D3DApp::ShowFPS() {
@@ -308,13 +312,7 @@ bool D3DApp::Run() {
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_ACTIVATE:
-		//if (LOWORD(wParam) == WA_INACTIVE) {
-		//	m_appPaused = true;
-		//	m_timerStop = true;
-		//} else {
-		//	m_appPaused = false;
-		//	m_timerStop = false;
-		//}
+
 		return 0;
 		// WM_SIZE is sent when the user resizes the window.  
 	case WM_SIZE:
@@ -343,16 +341,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					m_appPaused = false;
 					m_maximized = false;
 					OnResize();
-				} else if (m_resizing) {
-					int x = 0;
-					// If user is dragging the resize bars, we do not resize 
-					// the buffers here because as the user continuously 
-					// drags the resize bars, a stream of WM_SIZE messages are
-					// sent to the window, and it would be pointless (and slow)
-					// to resize for each WM_SIZE message received from dragging
-					// the resize bars.  So instead, we reset after the user is 
-					// done resizing the window and releases the resize bars, which 
-					// sends a WM_EXITSIZEMOVE message.
+				} else if (m_resizing){
 				} else {	
 					// API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 					OnResize();
@@ -368,8 +357,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		m_timerStop = true;
 		return 0;
 
-		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-		// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
 		m_appPaused = false;
 		m_resizing = false;
