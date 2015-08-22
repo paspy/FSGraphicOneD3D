@@ -269,6 +269,7 @@ void D3DApp::OnResize() {
 
 	m_d3dImmediateContext->RSSetViewports(1, &m_screenViewport);
 
+
 	LAB10 *lab10 = nullptr;
 	lab10 = dynamic_cast<LAB10*>(g_d3dApp);
 

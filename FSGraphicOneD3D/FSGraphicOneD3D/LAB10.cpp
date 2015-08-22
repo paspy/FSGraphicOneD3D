@@ -429,25 +429,44 @@ void LAB10::DrawScene() {
 	// So we can render the objects in depth order to the render target
 	// Puting the objects into a vector to organize the order of distance
 	// Find distance from cube to camera
-	XMVECTOR cubePos = XMVectorZero();
+	//XMVECTOR objPos = XMVectorZero();
 
-	cubePos = XMVector3TransformCoord(cubePos, cubeWorldMat);
+	//objPos = XMVector3TransformCoord(objPos, cubeWorldMat);
 
-	float distX = XMVectorGetX(cubePos) - XMVectorGetX(camPosition);
-	float distY = XMVectorGetY(cubePos) - XMVectorGetY(camPosition);
-	float distZ = XMVectorGetZ(cubePos) - XMVectorGetZ(camPosition);
+	//float distX = XMVectorGetX(objPos) - XMVectorGetX(camPosition);
+	//float distY = XMVectorGetY(objPos) - XMVectorGetY(camPosition);
+	//float distZ = XMVectorGetZ(objPos) - XMVectorGetZ(camPosition);
 
-	float cubeDist = distX*distX + distY*distY + distZ*distZ;
+	//float cubeDist = distX*distX + distY*distY + distZ*distZ;
 
-	//Set the WVP matrix and send it to the constant buffe in shader
+	//objPos = XMVectorZero();
+
+	//objPos = XMVector3TransformCoord(objPos, gridWorldMat);
+
+	//distX = XMVectorGetX(objPos) - XMVectorGetX(camPosition);
+	//distY = XMVectorGetY(objPos) - XMVectorGetY(camPosition);
+	//distZ = XMVectorGetZ(objPos) - XMVectorGetZ(camPosition);
+
+	//float gridDist = distX*distX + distY*distY + distZ*distZ;
+
+	UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
+	// Draw Grid
+	WVP = gridWorldMat * camView * camProjection;
+	cbPerObj.WVP = XMMatrixTranspose(WVP);
+	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
+	m_d3dImmediateContext->RSSetState(m_wireFrame);	// Set raster setting
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_gridVertexBuffer, &stride, &offset);
+	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+
+	m_d3dImmediateContext->Draw((UINT)m_gridVerts.size(), 0);
+
+	// draw two cubes
 	WVP = cubeWorldMat * camView * camProjection;
 	cbPerObj.WVP = XMMatrixTranspose(WVP);
 	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
 
-	// Draw calls
-		// draw two cubes
-	UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVertexBuffer, &stride, &offset);
 	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -460,15 +479,8 @@ void LAB10::DrawScene() {
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
 
 
-		// Draw Grid
-	WVP = gridWorldMat * camView * camProjection;
-	cbPerObj.WVP = XMMatrixTranspose(WVP);
-	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
-	m_d3dImmediateContext->RSSetState(m_wireFrame);	// Set raster setting
-	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_gridVertexBuffer, &stride, &offset);
-	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-	m_d3dImmediateContext->Draw((UINT)m_gridVerts.size(), 0);
+
+
 	//Present the backbuffer to the screen
 	HR(m_swapChain->Present(0, 0));
 }
