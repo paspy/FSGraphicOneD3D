@@ -1,4 +1,4 @@
-#include "LAB10.h"
+#include "LAB9.h"
 #include "Mathlib.h"
 // shader byte code
 #include "Trivial_VS.csh"
@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
+LAB9::LAB9(HINSTANCE hinst) : D3DApp(hinst),
 	m_circleVertexBuffer(nullptr),
 	m_gridVertexBuffer(nullptr),
 	m_constantBuffer(nullptr),
@@ -22,7 +22,7 @@ LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
 
 }
 
-LAB10::~LAB10() {
+LAB9::~LAB9() {
 	ReleaseCOM(m_circleVertexBuffer);
 	ReleaseCOM(m_gridVertexBuffer);
 	ReleaseCOM(m_constantBuffer);
@@ -45,7 +45,7 @@ LAB10::~LAB10() {
 	ReleaseCOM(m_ccwCullingMode);
 }
 
-bool LAB10::Init() {
+bool LAB9::Init() {
 	if (!D3DApp::Init())
 		return false;
 
@@ -59,12 +59,12 @@ bool LAB10::Init() {
 	return true;
 }
 
-void LAB10::OnResize() {
+void LAB9::OnResize() {
 	D3DApp::OnResize();
 
 }
 
-void LAB10::BuildCameraBuffer() {
+void LAB9::BuildCameraBuffer() {
 	D3D11_BUFFER_DESC cbbd;
 	ZeroMemory(&cbbd, sizeof(D3D11_BUFFER_DESC));
 
@@ -89,7 +89,7 @@ void LAB10::BuildCameraBuffer() {
 
 }
 
-void LAB10::BuildGeometryBuffers() {
+void LAB9::BuildGeometryBuffers() {
 	
 	// Clockwise
 	SIMPLE_VERTEX cubeVerteces[] = {
@@ -194,7 +194,7 @@ void LAB10::BuildGeometryBuffers() {
 	BuildGridBuffers();
 }
 
-void LAB10::BuildGridBuffers() {
+void LAB9::BuildGridBuffers() {
 
 	for (int i = -10; i <= 10; i++) {
 		XMFLOAT4 color;
@@ -223,10 +223,10 @@ void LAB10::BuildGridBuffers() {
 	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vinitData, &m_gridVertexBuffer));
 }
 
-void LAB10::BuildTextureAndState() {
+void LAB9::BuildTextureAndState() {
 
 	// load texture from file
-	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/numbers_test.dds", NULL, &m_cubesTexture));
+	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/texture1.dds", NULL, &m_cubesTexture));
 
 	// Describe the Sample State
 	D3D11_SAMPLER_DESC sampDesc;
@@ -245,7 +245,7 @@ void LAB10::BuildTextureAndState() {
 
 }
 
-void LAB10::BuildShader() {
+void LAB9::BuildShader() {
 	HR(m_d3dDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &m_vertexShader));
 	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
 
@@ -254,7 +254,7 @@ void LAB10::BuildShader() {
 
 }
 
-void LAB10::BuildVertexLayout() {
+void LAB9::BuildVertexLayout() {
 
 	D3D11_INPUT_ELEMENT_DESC vertLayout[] = {
 		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -268,7 +268,7 @@ void LAB10::BuildVertexLayout() {
 
 }
 
-void LAB10::BuildRenderStates() {
+void LAB9::BuildRenderStates() {
 
 	// Raster Description	
 	D3D11_RASTERIZER_DESC rasterDesc;
@@ -298,7 +298,7 @@ void LAB10::BuildRenderStates() {
 	renderTargetBlendDesc.SrcBlendAlpha			= D3D11_BLEND_ONE;
 	renderTargetBlendDesc.DestBlendAlpha		= D3D11_BLEND_ZERO;
 	renderTargetBlendDesc.BlendOpAlpha			= D3D11_BLEND_OP_ADD;
-	renderTargetBlendDesc.RenderTargetWriteMask = D3D10_COLOR_WRITE_ENABLE_ALL;
+	renderTargetBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 	blendDesc.AlphaToCoverageEnable = false;
 	blendDesc.RenderTarget[0] = renderTargetBlendDesc;
@@ -319,7 +319,7 @@ void LAB10::BuildRenderStates() {
 	HR(m_d3dDevice->CreateRasterizerState(&cmdesc, &m_cwCullingMode));
 }
 
-void LAB10::UpdateKeyboardInput(double _dt) {
+void LAB9::UpdateKeyboardInput(double _dt) {
 
 	if (GetAsyncKeyState(VK_LW)) {
 		moveBackForward += (float)_dt * 10.0f;
@@ -339,7 +339,7 @@ void LAB10::UpdateKeyboardInput(double _dt) {
 
 }
 
-void LAB10::UpdateCamera() {
+void LAB9::UpdateCamera() {
 
 	camRotationMatrix = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0);
 	camTarget = XMVector3TransformCoord(DefaultForward, camRotationMatrix);
@@ -366,7 +366,7 @@ void LAB10::UpdateCamera() {
 	moveBackForward = 0.0f;
 }
 
-void LAB10::UpdateScene(double _dt) {
+void LAB9::UpdateScene(double _dt) {
 
 	// Update objects
 	static double texIdx = 0;
@@ -376,7 +376,7 @@ void LAB10::UpdateScene(double _dt) {
 
 	if (rot > 6.26f) rot = 0.0f;
 
-	texIdx += _dt;
+	//texIdx += _dt;
 
 	cbPerObj.texIndex = (int)texIdx;
 
@@ -397,7 +397,7 @@ void LAB10::UpdateScene(double _dt) {
 
 }
 
-void LAB10::DrawScene() {
+void LAB9::DrawScene() {
 	assert(m_d3dImmediateContext);
 	assert(m_swapChain);
 
@@ -459,7 +459,7 @@ void LAB10::DrawScene() {
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_gridVertexBuffer, &stride, &offset);
 	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
-	m_d3dImmediateContext->Draw((UINT)m_gridVerts.size(), 0);
+	//m_d3dImmediateContext->Draw((UINT)m_gridVerts.size(), 0);
 
 	// draw two cubes
 	WVP = cubeWorldMat * camView * camProjection;
@@ -471,32 +471,29 @@ void LAB10::DrawScene() {
 	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Send conterclockwise culling cube first!
-	m_d3dImmediateContext->RSSetState(m_ccwCullingMode);
-	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
+	//m_d3dImmediateContext->RSSetState(m_ccwCullingMode);
+	//m_d3dImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Send clockwise culling cube following the conter-colockwise culling cube!
 	m_d3dImmediateContext->RSSetState(m_cwCullingMode);
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
 
-
-
-
 	//Present the backbuffer to the screen
 	HR(m_swapChain->Present(0, 0));
 }
 
-void LAB10::OnMouseDown(WPARAM _btnState, int _x, int _y) {
+void LAB9::OnMouseDown(WPARAM _btnState, int _x, int _y) {
 	m_lastMousePos.x = _x;
 	m_lastMousePos.y = _y;
 
 	SetCapture(window);
 }
 
-void LAB10::OnMouseUp(WPARAM _btnState, int _x, int _y) {
+void LAB9::OnMouseUp(WPARAM _btnState, int _x, int _y) {
 	ReleaseCapture();
 }
 
-void LAB10::OnMouseMove(WPARAM _btnState, int _x, int _y) {
+void LAB9::OnMouseMove(WPARAM _btnState, int _x, int _y) {
 	if ((MK_RBUTTON & _btnState) != 0) {
 
 		camYaw +=  0.01f*(_x - m_lastMousePos.x);

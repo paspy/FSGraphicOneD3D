@@ -22,7 +22,7 @@
     <ClCompile Include="d3dApp.cpp" />
     <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp" />
     <ClCompile Include="DDSTextureLoader\pch.cpp" />
-    <ClCompile Include="LAB10.cpp" />
+    <ClCompile Include="LAB9.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="XTime.cpp" />
   </ItemGroup>
@@ -34,7 +34,7 @@
     <ClInclude Include="DDSTextureLoader\DirectXHelpers.h" />
     <ClInclude Include="DDSTextureLoader\pch.h" />
     <ClInclude Include="DDSTextureLoader\PlatformHelpers.h" />
-    <ClInclude Include="LAB10.h" />
+    <ClInclude Include="LAB9.h" />
     <ClInclude Include="Mathlib.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>

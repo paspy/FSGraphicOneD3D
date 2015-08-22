@@ -1,5 +1,5 @@
 #include "d3dApp.h"
-#include "LAB10.h"
+#include "LAB9.h"
 
 #include <Windowsx.h>
 #include <sstream>
@@ -269,13 +269,6 @@ void D3DApp::OnResize() {
 
 	m_d3dImmediateContext->RSSetViewports(1, &m_screenViewport);
 
-
-	LAB10 *lab10 = nullptr;
-	lab10 = dynamic_cast<LAB10*>(g_d3dApp);
-
-	if (lab10) {
-		lab10->SetCamProj(XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f));
-	}
 }
 
 void D3DApp::ShowFPS() {

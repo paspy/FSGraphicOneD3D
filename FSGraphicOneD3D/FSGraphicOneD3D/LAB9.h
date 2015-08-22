@@ -31,10 +31,10 @@ struct cbPerObject {
 };
 
 
-class LAB10 : public D3DApp {
+class LAB9 : public D3DApp {
 	public:
-		LAB10(HINSTANCE hinst);
-		~LAB10();
+		LAB9(HINSTANCE hinst);
+		~LAB9();
 
 		bool Init();
 		void OnResize();
