@@ -17,8 +17,6 @@ float4 main(VS_OUTPUT input) : SV_TARGET{
 
 	float4 diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
 
-	//clip(diffuse.a - 0.50);
-
 	if (input.outColor.x == 0 &&
 		input.outColor.y == 0 &&
 		input.outColor.z == 0 &&

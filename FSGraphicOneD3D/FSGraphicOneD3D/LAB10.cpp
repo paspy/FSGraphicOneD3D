@@ -9,7 +9,6 @@
 LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
 	m_circleVertexBuffer(nullptr),
 	m_gridVertexBuffer(nullptr),
-	m_constantBuffer(nullptr),
 	m_inputLayout(nullptr),
 	m_vertexShader(nullptr),
 	m_pixelShader(nullptr) {
@@ -25,7 +24,6 @@ LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
 LAB10::~LAB10() {
 	ReleaseCOM(m_circleVertexBuffer);
 	ReleaseCOM(m_gridVertexBuffer);
-	ReleaseCOM(m_constantBuffer);
 	ReleaseCOM(m_vertexShader);
 	ReleaseCOM(m_pixelShader);
 	ReleaseCOM(m_inputLayout);

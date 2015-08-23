@@ -16,11 +16,14 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="LABs\LAB7 Shaders">
-      <UniqueIdentifier>{d7e077e7-7ca6-4706-81c3-5670bf6f5ad7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="D3D\DDSLoader">
       <UniqueIdentifier>{06efebe7-5aa4-4682-9717-9dd31d8bee16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LABs\Shaders">
+      <UniqueIdentifier>{d7e077e7-7ca6-4706-81c3-5670bf6f5ad7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LABs\Textures">
+      <UniqueIdentifier>{3f0b75c9-565e-4dad-a779-491a4966b8ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -74,13 +77,16 @@
     <ClInclude Include="LAB10.h">
       <Filter>LABs</Filter>
     </ClInclude>
+    <ClInclude Include="Resource\numbers_test.h">
+      <Filter>LABs\Textures</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\LAB7\Trivial_PS.hlsl">
-      <Filter>LABs\LAB7 Shaders</Filter>
+      <Filter>LABs\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\LAB7\Trivial_VS.hlsl">
-      <Filter>LABs\LAB7 Shaders</Filter>
+      <Filter>LABs\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

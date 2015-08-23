@@ -315,13 +315,13 @@ bool D3DApp::Run() {
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_ACTIVATE:
-		//if (LOWORD(wParam) == WA_INACTIVE) {
-		//	m_appPaused = true;
-		//	m_timerStop = true;
-		//} else {
-		//	m_appPaused = false;
-		//	m_timerStop = false;
-		//}
+		if (LOWORD(wParam) == WA_INACTIVE) {
+			m_appPaused = true;
+			m_timerStop = true;
+		} else {
+			m_appPaused = false;
+			m_timerStop = false;
+		}
 		return 0;
 		// WM_SIZE is sent when the user resizes the window.  
 	case WM_SIZE:
@@ -351,7 +351,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					m_maximized = false;
 					OnResize();
 				} else if (m_resizing) {
-					int x = 0;
 					// If user is dragging the resize bars, we do not resize 
 					// the buffers here because as the user continuously 
 					// drags the resize bars, a stream of WM_SIZE messages are

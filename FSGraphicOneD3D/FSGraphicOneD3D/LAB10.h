@@ -1,13 +1,6 @@
 #pragma once
 #include "d3dApp.h"
 
-//typedef struct SIMPLE_VERTEX {
-//	SIMPLE_VERTEX() {}
-//	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
-//	XMFLOAT3 pos;
-//	XMFLOAT4 color;
-//}*SIMPLE_VERTEX_ptr;
-
 typedef struct SIMPLE_VERTEX {
 	SIMPLE_VERTEX() {}
 	SIMPLE_VERTEX(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) { XMStoreFloat4(&color,Colors::Black); }
@@ -16,13 +9,6 @@ typedef struct SIMPLE_VERTEX {
 	XMFLOAT4 color;
 	XMFLOAT2 texCoord;
 }*SIMPLE_VERTEX_ptr;
-
-// Define the constant data used to communicate with shaders.
-typedef struct SEND_TO_VRAM {
-	XMFLOAT4 constantColor;
-	XMFLOAT2 constantOffset;
-	XMFLOAT2 padding;
-}*SEND_TO_VRAM_ptr;
 
 
 struct cbPerObject {
@@ -67,10 +53,6 @@ class LAB10 : public D3DApp {
 		ID3D11VertexShader				*m_vertexShader;
 		ID3D11PixelShader				*m_pixelShader;
 
-		// deprecated and used to apply constat color to obj; Old LAB 7 stuff
-		ID3D11Buffer					*m_constantBuffer;		
-		SEND_TO_VRAM					m_vertConstData;
-
 		cbPerObject						cbPerObj;
 		ID3D11Buffer					*cbPerObjectBuffer = nullptr;
 
@@ -101,14 +83,15 @@ class LAB10 : public D3DApp {
 
 		// Object
 		vector<SIMPLE_VERTEX>			m_gridVerts;
-		XMMATRIX cubeWorldMat;
-		XMMATRIX gridWorldMat;
+		XMMATRIX						cubeWorldMat;
+		XMMATRIX						gridWorldMat;
 
 		// Render States
 		ID3D11RasterizerState			*m_wireFrame			= nullptr;
 
 		// texture
 		ID3D11ShaderResourceView		*m_cubesTexture			= nullptr;
+
 		ID3D11SamplerState				*m_cubesTexSamplerState = nullptr;
 
 		// blending transparency
