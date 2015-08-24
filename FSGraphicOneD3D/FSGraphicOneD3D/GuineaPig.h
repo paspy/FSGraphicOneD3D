@@ -71,8 +71,7 @@ class GuineaPig : public D3DApp {
 		ID3D11VertexShader				*m_skyboxVertexShader	= nullptr;
 		ID3D11PixelShader				*m_skyboxPixelShader	= nullptr;
 
-		ID3D11InputLayout				*m_skyboxInputLayout			= nullptr;
-
+		ID3D11InputLayout				*m_skyboxInputLayout	= nullptr;
 
 		ID3D11ShaderResourceView		*m_skyboxShaderResView	= nullptr;
 

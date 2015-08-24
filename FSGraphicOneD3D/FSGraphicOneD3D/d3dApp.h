@@ -75,6 +75,7 @@ class D3DApp {
 		ID3D11RenderTargetView			*m_renderTargetView;
 		ID3D11DepthStencilView			*m_depthStencilView;
 		D3D11_VIEWPORT					 m_screenViewport;	// non-pointer
+		ID3D11Debug						*m_d3dDebug = nullptr;
 
 		// default View, Projection
 		XMMATRIX						m_camView;
@@ -102,6 +103,7 @@ class D3DApp {
 		POINT							m_lastMousePos;
 		float							m_mouseAplha;
 		float							m_mouseBeta;
+
 
 };
 

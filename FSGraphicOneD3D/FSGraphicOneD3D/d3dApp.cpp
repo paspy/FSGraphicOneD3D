@@ -84,7 +84,28 @@ D3DApp::~D3DApp() {
 		m_d3dImmediateContext->ClearState();
 
 	ReleaseCOM(m_d3dImmediateContext);
+	if (SUCCEEDED(m_d3dDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)&m_d3dDebug))) {
+		ID3D11InfoQueue *d3dInfoQueue = nullptr;
+		if (SUCCEEDED(m_d3dDebug->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)&d3dInfoQueue))) {
+#if defined(DEBUG) || defined(_DEBUG)
+			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
+			d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, true);
+#endif
+			D3D11_MESSAGE_ID hide[] = {
+				D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
+				// Add more message IDs here as needed
+			};
+			D3D11_INFO_QUEUE_FILTER filter;
+			memset(&filter, 0, sizeof(filter));
+			filter.DenyList.NumIDs = _countof(hide);
+			filter.DenyList.pIDList = hide;
+			d3dInfoQueue->AddStorageFilterEntries(&filter);
+			d3dInfoQueue->Release();
+		}
+	}
+	m_d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL);
 	ReleaseCOM(m_d3dDevice);
+	ReleaseCOM(m_d3dDebug);
 
 	UnregisterClass(L"DirectXApplication", application);
 }
@@ -224,6 +245,9 @@ bool D3DApp::InitDirect3D() {
 
 	HR(m_d3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality));
 	assert(m_4xMsaaQuality > 0);
+
+
+
 
 	OnResize();
 

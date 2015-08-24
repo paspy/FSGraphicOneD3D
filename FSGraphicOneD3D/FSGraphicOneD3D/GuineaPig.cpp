@@ -23,15 +23,6 @@ GuineaPig::GuineaPig(HINSTANCE hinst) : D3DApp(hinst),
 }
 
 GuineaPig::~GuineaPig() {
-	// release skybox ptr
-	ReleaseCOM(m_sphereIndexBuffer);
-	ReleaseCOM(m_sphereVertBuffer);
-	ReleaseCOM(m_skyboxVertexShader);
-	ReleaseCOM(m_skyboxPixelShader);
-	ReleaseCOM(m_skyboxShaderResView);
-	ReleaseCOM(m_skyboxDSLessEqual);
-	ReleaseCOM(m_skyboxRasterState);
-
 
 	// release geometries ptr
 	ReleaseCOM(m_cubeVertexBuffer);
@@ -70,6 +61,15 @@ GuineaPig::~GuineaPig() {
 	ReleaseCOM(m_blendTransparency);
 	ReleaseCOM(m_cwCullingMode);
 	ReleaseCOM(m_ccwCullingMode);
+
+	// release skybox ptr
+	ReleaseCOM(m_sphereIndexBuffer);
+	ReleaseCOM(m_sphereVertBuffer);
+	ReleaseCOM(m_skyboxVertexShader);
+	ReleaseCOM(m_skyboxPixelShader);
+	ReleaseCOM(m_skyboxShaderResView);
+	ReleaseCOM(m_skyboxDSLessEqual);
+	ReleaseCOM(m_skyboxRasterState);
 }
 
 bool GuineaPig::Init() {
@@ -486,7 +486,7 @@ void GuineaPig::BuildTextureAndState() {
 
 	// loading the skybox texture
 	ID3D11Texture2D* SkyboxTexture = nullptr;
-	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/skymap.dds", (ID3D11Resource**)&SkyboxTexture, &m_skyboxShaderResView));
+	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/skymap.dds", (ID3D11Resource**)&SkyboxTexture, NULL));
 
 	D3D11_TEXTURE2D_DESC SBTextureDesc;
 	SkyboxTexture->GetDesc(&SBTextureDesc);
@@ -499,11 +499,11 @@ void GuineaPig::BuildTextureAndState() {
 
 	HR(m_d3dDevice->CreateShaderResourceView(SkyboxTexture, &SMViewDesc, &m_skyboxShaderResView));
 
-
+	ReleaseCOM(SkyboxTexture);
 }
 
 void GuineaPig::BuildLighting() {
-	m_baseLight.direction = XMFLOAT3(0.25f, 0.5f, -1.0f);
+	m_baseLight.direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_baseLight.diffuse = XMFLOAT4(1.2f, 1.2f, 1.2f, 1.2f);
 }
@@ -672,10 +672,10 @@ void GuineaPig::DrawScene() {
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_sphereVertBuffer, &stride, &offset);
 
 	//Set the WVP matrix and send it to the constant buffer in effect file
-	m_cbCubeObject.WVP = XMMatrixTranspose(m_sphereWorld * m_camView * m_camProjection);
-	m_cbCubeObject.World = XMMatrixTranspose(m_sphereWorld);
-	m_d3dImmediateContext->UpdateSubresource(m_cbCubeBuffer, 0, NULL, &m_cbCubeObject, 0, 0);
-	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbCubeBuffer);
+	m_cbGroundObject.WVP = XMMatrixTranspose(m_sphereWorld * m_camView * m_camProjection);
+	m_cbGroundObject.World = XMMatrixTranspose(m_sphereWorld);
+	m_d3dImmediateContext->UpdateSubresource(m_cbGroundBuffer, 0, NULL, &m_cbGroundObject, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbGroundBuffer);
 	//Send our skymap resource view to pixel shader
 	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_skyboxShaderResView);
 	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubeTexSamplerState);
@@ -806,7 +806,6 @@ void GuineaPig::UpdateKeyboardInput(double _dt) {
 void GuineaPig::UpdateCamera() {
 	D3DApp::UpdateCamera();
 }
-
 
 void GuineaPig::OnMouseDown(WPARAM _btnState, int _x, int _y) {
 	m_lastMousePos.x = _x;
