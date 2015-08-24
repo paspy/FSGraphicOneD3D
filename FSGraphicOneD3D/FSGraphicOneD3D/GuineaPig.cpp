@@ -24,6 +24,7 @@ GuineaPig::~GuineaPig() {
 	// release geometries ptr
 	ReleaseCOM(m_cubeVertexBuffer);
 	ReleaseCOM(m_cubeIndexBuffer);
+	ReleaseCOM(m_groundIndexBuffer);
 	ReleaseCOM(m_groundVertexBuffer);
 
 	// release shader ptr
@@ -36,15 +37,20 @@ GuineaPig::~GuineaPig() {
 	// release constant buffer ptr
 	ReleaseCOM(m_cbCubeBuffer);
 	ReleaseCOM(m_cbGroundBuffer);
+	ReleaseCOM(m_cbPerFrameBuffer);
 
 	// release texture ptr
+		// the cube
 	ReleaseCOM(m_cubeShaderResView);
 	ReleaseCOM(m_cubeTexture2D);
 	ReleaseCOM(m_cubeTexSamplerState);
-
+		// the ground
 	ReleaseCOM(m_grassShaderResView);
 	ReleaseCOM(m_grassTexture2D);
 	ReleaseCOM(m_grassTexSamplerState);
+
+	// release lighting ptr
+	ReleaseCOM(m_perFrameBuffer);
 
 	// release render state ptr
 	ReleaseCOM(m_antialiasedLine);
@@ -60,6 +66,7 @@ bool GuineaPig::Init() {
 	BuildObjConstBuffer();
 	BuildGeometryBuffers(); 
 	BuildTextureAndState();
+	BuildLighting();
 	BuildVertexLayout();
 	BuildShader();
 	BuildRenderStates();
@@ -73,6 +80,7 @@ void GuineaPig::OnResize() {
 }
 
 void GuineaPig::BuildObjConstBuffer() {
+	// objects
 	D3D11_BUFFER_DESC cbbd;
 	ZeroMemory(&cbbd, sizeof(D3D11_BUFFER_DESC));
 
@@ -86,47 +94,57 @@ void GuineaPig::BuildObjConstBuffer() {
 
 	HR(m_d3dDevice->CreateBuffer(&cbbd, NULL, &m_cbGroundBuffer));
 	m_cbGroundObject.texIndex = 0;
+
+	// lightings
+	ZeroMemory(&cbbd, sizeof(D3D11_BUFFER_DESC));
+	cbbd.Usage = D3D11_USAGE_DEFAULT;
+	cbbd.ByteWidth = sizeof(ConstPerFrame);
+	cbbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbbd.CPUAccessFlags = 0;
+	cbbd.MiscFlags = 0;
+	HR(m_d3dDevice->CreateBuffer(&cbbd, NULL, &m_cbPerFrameBuffer));
+
 }
 
 void GuineaPig::BuildGeometryBuffers() {
-	
+
 	// Clockwise
 	Vertex3D cubeVerteces[] = {
 		// Front Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),	// A
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f)),	// B
-		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f)),	// C
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),	// D
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f)),	// A
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f,  1.0f, -1.0f)),	// B
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f,  1.0f, -1.0f)),	// C
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, -1.0f, -1.0f)),	// D
 
 		// Back Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.25f, 1.0f)),		
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f,  1.0f, 1.0f), XMFLOAT2(0.0f,  0.0f)),
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f, 1.0f), XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, -1.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, -1.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, +1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f,  1.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, +1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f,  1.0f, +1.0f)),
 
 		// Top Face
-		Vertex3D(XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, 1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, 1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, 1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, +1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, +1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f, +1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, +1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f, +1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, +1.0f, -1.0f)),
 
 		// Bottom Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f),XMFLOAT2(0.25f, 1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f),XMFLOAT2(0.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f),XMFLOAT2(0.0f,  0.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f),XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, -1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f, -1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f, -1.0f,  1.0f)),
 
 		// Left Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f)),
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, -1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f,  1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f,  1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f)),
 
 		// Right Face
-		Vertex3D(XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f)),
-		Vertex3D(XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f)),
-		Vertex3D(XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, -1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f,  1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f,  1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, -1.0f,  1.0f)),
 	};
 
 	DWORD cubeIndices[] = {
@@ -197,10 +215,10 @@ void GuineaPig::BuildGroundBuffers() {
 
 	//Create the vertex buffer
 	Vertex3D groundVerts[] = {
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2( 100.0f, 100.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(   0.0f, 100.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT2(   0.0f,   0.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT2( 100.0f,   0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(100.0f, 100.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(  0.0f, 100.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT2(  0.0f,   0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT2(100.0f,   0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
 	};
 
 	DWORD gourndIndices[] = {
@@ -337,6 +355,12 @@ void GuineaPig::BuildTextureAndState() {
 
 }
 
+void GuineaPig::BuildLighting() {
+	m_baseLight.direction = XMFLOAT3(0.25f, 0.5f, -1.0f);
+	m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	m_baseLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
 void GuineaPig::BuildShader() {
 	HR(m_d3dDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &m_vertexShader));
 	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
@@ -349,13 +373,15 @@ void GuineaPig::BuildShader() {
 void GuineaPig::BuildVertexLayout() {
 
 	D3D11_INPUT_ELEMENT_DESC vertLayout[] = {
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
 	};
 
 	// Create the input layout
-	HR(m_d3dDevice->CreateInputLayout(vertLayout, 3, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
+	HR(m_d3dDevice->CreateInputLayout(vertLayout, 4, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
 	m_d3dImmediateContext->IASetInputLayout(m_inputLayout);
 
 }
@@ -485,6 +511,11 @@ void GuineaPig::DrawScene() {
 
 	//float gridDist = distX*distX + distY*distY + distZ*distZ;
 
+	// apply lighting
+	m_cbPerFrame.baseLight = m_baseLight;
+	m_d3dImmediateContext->UpdateSubresource(m_cbPerFrameBuffer, 0, NULL, &m_cbPerFrame, 0, 0);
+	m_d3dImmediateContext->PSSetConstantBuffers(0, 1, &m_cbPerFrameBuffer);
+
 	UINT stride = sizeof(Vertex3D), offset = 0;
 
 	// Set Shader Resources and Samplers
@@ -493,6 +524,7 @@ void GuineaPig::DrawScene() {
 
 	// Draw Ground
 	m_cbGroundObject.WVP = XMMatrixTranspose(groundWorldMat * m_camView * m_camProjection);
+	m_cbGroundObject.World = groundWorldMat;
 	m_d3dImmediateContext->UpdateSubresource(m_cbGroundBuffer, 0, NULL, &m_cbGroundObject, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbGroundBuffer);
 	// Set verts buffer
@@ -509,6 +541,7 @@ void GuineaPig::DrawScene() {
 
 	// draw two cubes
 	m_cbCubeObject.WVP = XMMatrixTranspose(cubeWorldMat * m_camView * m_camProjection);
+	m_cbCubeObject.World = cubeWorldMat;
 	m_d3dImmediateContext->UpdateSubresource(m_cbCubeBuffer, 0, NULL, &m_cbCubeObject, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbCubeBuffer);
 	// Set verts buffer

@@ -1,8 +1,11 @@
 
 cbuffer ConstPerObject {
 	float4x4 WVP;
+	float4x4 World;
 	int texIndex;
 };
+
+
 
 // textures!
 Texture2D ObjTexture;
@@ -10,18 +13,24 @@ SamplerState ObjSamplerState;
 
 
 struct VS_OUTPUT {
-	float4 outPos : SV_POSITION;
-	float4 outColor : COLOR;
+	float4 Position : SV_POSITION;
+	float4 Color : COLOR;
 	float2 TexCoord : TEXCOORD;
+	float3 Normal : NORMAL;
 };
 
 
-VS_OUTPUT main(float4 inPos : POSITION, float4 inColor : COLOR ,float2 inTexCoord : TEXCOORD) {
+VS_OUTPUT main(float4 inPos : POSITION,
+			   float4 inColor : COLOR,
+			   float2 inTexCoord : TEXCOORD,
+			   float3 inNormal : NORMAL) {
 	VS_OUTPUT output;
 
-	output.outPos = mul(inPos, WVP);
+	output.Position = mul(inPos, WVP);
+
+	output.Normal = mul(inNormal, World);
 	
-	output.outColor = inColor;
+	output.Color = inColor;
 
 	output.TexCoord = inTexCoord;
 

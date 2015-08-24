@@ -1,19 +1,26 @@
-//float4 main(float4 colorFromRasterizer : COLOR) : SV_TARGET {
-//	return colorFromRasterizer;
-//}
+
+struct BaseLight {
+	float3 direction;
+	float4 ambient;
+	float4 diffuse;
+};
+
+cbuffer ConstPerFrame {
+	BaseLight baseLight;
+};
 
 Texture2D ObjTexture;
 SamplerState ObjSamplerState;
 
 struct VS_OUTPUT {
-	float4 outPos : SV_POSITION;
-	float4 outColor : COLOR;
+	float4 Position : SV_POSITION;
+	float4 Color : COLOR;
 	float2 TexCoord : TEXCOORD;
+	float3 Normal : NORMAL;
 };
 
-float4 main(VS_OUTPUT input) : SV_TARGET{
-	//return input.outColor;
-
+float4 main(VS_OUTPUT input) : SV_TARGET {
+	input.Normal = normalize(input.Normal);
 
 	float4 rawDiffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
 	float4 diffuse;
@@ -22,13 +29,19 @@ float4 main(VS_OUTPUT input) : SV_TARGET{
 	diffuse.g = rawDiffuse.r;
 	diffuse.b = rawDiffuse.a;
 
-	if (input.outColor.x == 0 &&
-		input.outColor.y == 0 &&
-		input.outColor.z == 0 &&
-		input.outColor.w == 1 ) {
-		return diffuse;
+	float3 finalColor;
+
+	finalColor = diffuse * baseLight.ambient;
+	finalColor += saturate(dot(baseLight.direction, input.Normal) * baseLight.diffuse * diffuse);
+
+	if (input.Color.x == 0 &&
+		input.Color.y == 0 &&
+		input.Color.z == 0 &&
+		input.Color.w == 1 ) {
+		//return diffuse;
+		return float4(finalColor, diffuse.a);
 	} else {
-		return input.outColor;
+		return input.Color;
 	}
 
 }

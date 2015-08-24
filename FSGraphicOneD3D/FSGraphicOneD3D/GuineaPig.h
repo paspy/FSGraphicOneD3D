@@ -3,17 +3,34 @@
 
 typedef struct Vertex3D {
 	Vertex3D() {}
-	Vertex3D(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) { XMStoreFloat4(&color,Colors::Black); }
 	Vertex3D(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
+	Vertex3D(XMFLOAT3 _pos, XMFLOAT2 _tex) : pos(_pos), texCoord(_tex) { XMStoreFloat4(&color,Colors::Black); }
+	Vertex3D(XMFLOAT3 _pos, XMFLOAT2 _tex, XMFLOAT3 _norm) : pos(_pos), texCoord(_tex), normal(_norm)
+	{ XMStoreFloat4(&color, Colors::Black); }
+
 	XMFLOAT3 pos;
 	XMFLOAT4 color;
 	XMFLOAT2 texCoord;
+	XMFLOAT3 normal;
 }*Vertex3D_ptr;
 
 
 struct ConstPerObject {
 	XMMATRIX WVP;
+	XMMATRIX World;
 	int texIndex;
+};
+
+struct BaseLight {
+	BaseLight() { ZeroMemory(this, sizeof(BaseLight)); }
+	XMFLOAT3 direction;
+	float paddding;
+	XMFLOAT4 ambient;
+	XMFLOAT4 diffuse;
+};
+
+struct ConstPerFrame {
+	BaseLight baseLight;
 };
 
 
@@ -38,6 +55,7 @@ class GuineaPig : public D3DApp {
 		void BuildGeometryBuffers();
 		void BuildGroundBuffers();
 		void BuildTextureAndState();
+		void BuildLighting();
 		void BuildShader();
 		void BuildVertexLayout();
 		void BuildRenderStates();
@@ -75,6 +93,13 @@ class GuineaPig : public D3DApp {
 		ID3D11ShaderResourceView		*m_grassShaderResView	= nullptr;
 		ID3D11Texture2D					*m_grassTexture2D		= nullptr;
 		ID3D11SamplerState				*m_grassTexSamplerState	= nullptr;
+
+		// Lighting
+		ID3D11Buffer					*m_perFrameBuffer		= nullptr;
+		BaseLight						m_baseLight;
+
+		ConstPerFrame					m_cbPerFrame;
+		ID3D11Buffer					*m_cbPerFrameBuffer		= nullptr;
 
 		// blending transparency
 		ID3D11BlendState				*m_blendTransparency	= nullptr;
