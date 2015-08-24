@@ -20,8 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp" />
-    <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp" />
-    <ClCompile Include="DDSTextureLoader\pch.cpp" />
     <ClCompile Include="LAB10.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="XTime.cpp" />
@@ -29,11 +27,6 @@
   <ItemGroup>
     <ClInclude Include="D3DUtils.h" />
     <ClInclude Include="d3dApp.h" />
-    <ClInclude Include="DDSTextureLoader\dds.h" />
-    <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h" />
-    <ClInclude Include="DDSTextureLoader\DirectXHelpers.h" />
-    <ClInclude Include="DDSTextureLoader\pch.h" />
-    <ClInclude Include="DDSTextureLoader\PlatformHelpers.h" />
     <ClInclude Include="LAB10.h" />
     <ClInclude Include="Mathlib.h" />
     <ClInclude Include="Resource\numbers_test.h" />

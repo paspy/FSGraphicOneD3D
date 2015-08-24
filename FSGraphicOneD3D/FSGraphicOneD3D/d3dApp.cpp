@@ -156,16 +156,14 @@ bool D3DApp::InitDirect3D() {
 
 	IDXGIFactory *factoryPtr = nullptr;
 	IDXGIAdapter *adapterPtr = nullptr;
-	std::vector<IDXGIAdapter *> adapters;
+	vector<IDXGIAdapter *> adapters;
 
 	CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&factoryPtr);
 
 	UINT bestAdapterIndex = 0;
 	size_t bestMemSize = 0;
 
-	for (UINT i = 0;
-	factoryPtr->EnumAdapters(i, &adapterPtr) != DXGI_ERROR_NOT_FOUND;
-		++i) {
+	for (UINT i = 0; factoryPtr->EnumAdapters(i, &adapterPtr) != DXGI_ERROR_NOT_FOUND; i++) {
 		adapters.push_back(adapterPtr);
 		DXGI_ADAPTER_DESC desc;
 		adapterPtr->GetDesc(&desc);

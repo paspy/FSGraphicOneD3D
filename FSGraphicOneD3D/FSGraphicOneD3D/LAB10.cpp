@@ -4,10 +4,13 @@
 #include "Trivial_VS.csh"
 #include "Trivial_PS.csh"
 
+// texture header file
+#include "Resource/numbers_test.h"
+
 #include <iostream>
 
 LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
-	m_circleVertexBuffer(nullptr),
+	m_cubeVertexBuffer(nullptr),
 	m_gridVertexBuffer(nullptr),
 	m_inputLayout(nullptr),
 	m_vertexShader(nullptr),
@@ -22,19 +25,21 @@ LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
 }
 
 LAB10::~LAB10() {
-	ReleaseCOM(m_circleVertexBuffer);
+	ReleaseCOM(m_cubeVertexBuffer);
 	ReleaseCOM(m_gridVertexBuffer);
 	ReleaseCOM(m_vertexShader);
 	ReleaseCOM(m_pixelShader);
 	ReleaseCOM(m_inputLayout);
 
-	ReleaseCOM(cbPerObjectBuffer);
+	ReleaseCOM(m_constPerObjectBuffer);
 
 	ReleaseCOM(m_cubeIndexBuffer);
 
 	ReleaseCOM(m_wireFrame);
 
-	ReleaseCOM(m_cubesTexture);
+	// release texture ptr
+	ReleaseCOM(m_cubeShaderResView);
+	ReleaseCOM(m_cubeTexture2D);
 	ReleaseCOM(m_cubesTexSamplerState);
 
 
@@ -67,19 +72,14 @@ void LAB10::BuildCameraBuffer() {
 	ZeroMemory(&cbbd, sizeof(D3D11_BUFFER_DESC));
 
 	cbbd.Usage = D3D11_USAGE_DEFAULT;
-	//cbbd.Usage = D3D11_USAGE_DYNAMIC;
-	cbbd.ByteWidth = sizeof(cbPerObject);
+	cbbd.ByteWidth = sizeof(ConstPerObject);
 	cbbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbbd.CPUAccessFlags = 0;
 	cbbd.MiscFlags = 0;
 
-	HR(m_d3dDevice->CreateBuffer(&cbbd, NULL, &cbPerObjectBuffer));
+	HR(m_d3dDevice->CreateBuffer(&cbbd, NULL, &m_constPerObjectBuffer));
 
 	// set up camera & projection mat
-	//camPosition = XMVectorSet(0.0f, 0.0f, -2.5f, 0.0f);
-	//camPosition = XMVectorSet(0.0f, 3.0f, -8.0f, 0.0f);
-	//camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
-
 	camPosition = XMVectorSet(0.0f, 0.0f, -0.5f, 1.0f);
 	camTarget = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 	camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f);
@@ -90,42 +90,42 @@ void LAB10::BuildCameraBuffer() {
 void LAB10::BuildGeometryBuffers() {
 	
 	// Clockwise
-	SIMPLE_VERTEX cubeVerteces[] = {
+	Vertex3D cubeVerteces[] = {
 		// Front Face
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),	// A
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f)),	// B
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f)),	// C
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),	// D
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),	// A
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f)),	// B
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f)),	// C
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),	// D
 
 		// Back Face
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.25f, 1.0f)),		
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f,  1.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f,  1.0f, 1.0f), XMFLOAT2(0.0f,  0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f,  1.0f, 1.0f), XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT2(0.25f, 1.0f)),		
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, 1.0f), XMFLOAT2(0.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, 1.0f), XMFLOAT2(0.0f,  0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, 1.0f), XMFLOAT2(0.25f, 0.0f)),
 
 		// Top Face
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, 1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f, 1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f, 1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, 1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, 1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, 1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),
 
 		// Bottom Face
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f, -1.0f),XMFLOAT2(0.25f, 1.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f, -1.0f, -1.0f),XMFLOAT2(0.0f,  1.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(+1.0f, -1.0f,  1.0f),XMFLOAT2(0.0f,  0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f,  1.0f),XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f),XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f),XMFLOAT2(0.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f),XMFLOAT2(0.0f,  0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f),XMFLOAT2(0.25f, 0.0f)),
 
 		// Left Face
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  1.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f)),
 
 		// Right Face
-		SIMPLE_VERTEX(XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f)),
-		SIMPLE_VERTEX(XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 1.0f)),
+		Vertex3D(XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f)),
+		Vertex3D(XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f)),
+		Vertex3D(XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 1.0f)),
 	};
 
 	DWORD cubeIndices[] = {
@@ -175,19 +175,17 @@ void LAB10::BuildGeometryBuffers() {
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = NULL;
 	vertexBufferDesc.MiscFlags = 0;
-	//vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(SIMPLE_VERTEX) * m_vertices.size());
-	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(SIMPLE_VERTEX) * 24);
+	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex3D) * 24);
 
 	D3D11_SUBRESOURCE_DATA vinitData;
 	//vinitData.pSysMem = m_vertices.data();
 	vinitData.pSysMem = cubeVerteces;
 
 	// Create Verteces Buffer
-	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vinitData, &m_circleVertexBuffer));
-	// Set verteces buffer
-	//UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
-	//m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVertexBuffer, &stride, &offset);
-
+	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vinitData, &m_cubeVertexBuffer));
+	// Set verteces buffer	- if changed over time, need to recall every frame
+	//UINT stride = sizeof(Vertex3D), offset = 0;
+	//m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_cubeVertexBuffer, &stride, &offset);
 	
 	BuildGridBuffers();
 }
@@ -197,10 +195,10 @@ void LAB10::BuildGridBuffers() {
 	for (int i = -10; i <= 10; i++) {
 		XMFLOAT4 color;
 		XMStoreFloat4(&color, Colors::LightGreen);
-		SIMPLE_VERTEX vert1(XMFLOAT3((float)i, -1.0f, +10.0f), color);
-		SIMPLE_VERTEX vert2(XMFLOAT3((float)i, -1.0f, -10.0f), color);
-		SIMPLE_VERTEX vert3(XMFLOAT3(+10.0f, -1.0f, (float)i), color);
-		SIMPLE_VERTEX vert4(XMFLOAT3(-10.0f, -1.0f, (float)i), color);
+		Vertex3D vert1(XMFLOAT3((float)i, -1.0f, +10.0f), color);
+		Vertex3D vert2(XMFLOAT3((float)i, -1.0f, -10.0f), color);
+		Vertex3D vert3(XMFLOAT3(+10.0f, -1.0f, (float)i), color);
+		Vertex3D vert4(XMFLOAT3(-10.0f, -1.0f, (float)i), color);
 		m_gridVerts.push_back(vert1);
 		m_gridVerts.push_back(vert2);
 		m_gridVerts.push_back(vert3);
@@ -212,7 +210,7 @@ void LAB10::BuildGridBuffers() {
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = NULL;
 	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(SIMPLE_VERTEX) * m_gridVerts.size());
+	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex3D) * m_gridVerts.size());
 
 	D3D11_SUBRESOURCE_DATA vinitData;
 	vinitData.pSysMem = m_gridVerts.data();
@@ -223,8 +221,36 @@ void LAB10::BuildGridBuffers() {
 
 void LAB10::BuildTextureAndState() {
 
-	// load texture from file
-	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/numbers_test.dds", NULL, &m_cubesTexture));
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResViewDesc;
+	ZeroMemory(&shaderResViewDesc, sizeof(shaderResViewDesc));
+	shaderResViewDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
+	shaderResViewDesc.Texture2D.MipLevels = numbers_test_numlevels;
+
+	D3D11_TEXTURE2D_DESC textureBufferDesc;
+	ZeroMemory(&textureBufferDesc, sizeof(textureBufferDesc));
+	textureBufferDesc.Width = numbers_test_width;
+	textureBufferDesc.Height = numbers_test_height;
+	textureBufferDesc.MipLevels = numbers_test_numlevels;
+	textureBufferDesc.ArraySize = 1;
+	textureBufferDesc.SampleDesc.Count = 1;
+	textureBufferDesc.SampleDesc.Quality = 0;
+	textureBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureBufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	textureBufferDesc.CPUAccessFlags = 0;
+	textureBufferDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA texInitData[numbers_test_numlevels];
+	for (int i = 0; i < numbers_test_numlevels; i++) {
+		texInitData[i].pSysMem = &numbers_test_pixels[numbers_test_leveloffsets[i]];
+		texInitData[i].SysMemPitch = (numbers_test_width >> i)*sizeof(unsigned int);
+	}
+
+	// create texture
+	HR(m_d3dDevice->CreateTexture2D(&textureBufferDesc, texInitData, &m_cubeTexture2D));
+
+	// create shader resource view from texture
+	HR(m_d3dDevice->CreateShaderResourceView(m_cubeTexture2D, &shaderResViewDesc, &m_cubeShaderResView));
 
 	// Describe the Sample State
 	D3D11_SAMPLER_DESC sampDesc;
@@ -376,7 +402,7 @@ void LAB10::UpdateScene(double _dt) {
 
 	texIdx += _dt;
 
-	cbPerObj.texIndex = (int)texIdx;
+	m_cbPerObj.texIndex = (int)texIdx;
 
 	if ((int)texIdx > 3) texIdx = 0;
 
@@ -406,7 +432,7 @@ void LAB10::DrawScene() {
 	m_d3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Set Shader Resources and Samplers
-	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubesTexture);
+	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubeShaderResView);
 	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubesTexSamplerState);
 
 	// opaque objects drawing
@@ -447,12 +473,12 @@ void LAB10::DrawScene() {
 
 	//float gridDist = distX*distX + distY*distY + distZ*distZ;
 
-	UINT stride = sizeof(SIMPLE_VERTEX), offset = 0;
+	UINT stride = sizeof(Vertex3D), offset = 0;
 	// Draw Grid
 	WVP = gridWorldMat * camView * camProjection;
-	cbPerObj.WVP = XMMatrixTranspose(WVP);
-	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
+	m_cbPerObj.WVP = XMMatrixTranspose(WVP);
+	m_d3dImmediateContext->UpdateSubresource(m_constPerObjectBuffer, 0, NULL, &m_cbPerObj, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_constPerObjectBuffer);
 	m_d3dImmediateContext->RSSetState(m_wireFrame);	// Set raster setting
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_gridVertexBuffer, &stride, &offset);
 	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -461,11 +487,11 @@ void LAB10::DrawScene() {
 
 	// draw two cubes
 	WVP = cubeWorldMat * camView * camProjection;
-	cbPerObj.WVP = XMMatrixTranspose(WVP);
-	m_d3dImmediateContext->UpdateSubresource(cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &cbPerObjectBuffer);
+	m_cbPerObj.WVP = XMMatrixTranspose(WVP);
+	m_d3dImmediateContext->UpdateSubresource(m_constPerObjectBuffer, 0, NULL, &m_cbPerObj, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_constPerObjectBuffer);
 
-	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_circleVertexBuffer, &stride, &offset);
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_cubeVertexBuffer, &stride, &offset);
 	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Send conterclockwise culling cube first!

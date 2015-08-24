@@ -16,9 +16,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="D3D\DDSLoader">
-      <UniqueIdentifier>{06efebe7-5aa4-4682-9717-9dd31d8bee16}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LABs\Shaders">
       <UniqueIdentifier>{d7e077e7-7ca6-4706-81c3-5670bf6f5ad7}</UniqueIdentifier>
     </Filter>
@@ -36,12 +33,6 @@
     <ClCompile Include="XTime.cpp">
       <Filter>D3D</Filter>
     </ClCompile>
-    <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClCompile>
-    <ClCompile Include="DDSTextureLoader\pch.cpp">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClCompile>
     <ClCompile Include="LAB10.cpp">
       <Filter>LABs</Filter>
     </ClCompile>
@@ -58,21 +49,6 @@
     </ClInclude>
     <ClInclude Include="D3DUtils.h">
       <Filter>D3D</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\dds.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\DirectXHelpers.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\pch.h">
-      <Filter>D3D\DDSLoader</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader\PlatformHelpers.h">
-      <Filter>D3D\DDSLoader</Filter>
     </ClInclude>
     <ClInclude Include="LAB10.h">
       <Filter>LABs</Filter>

@@ -39,8 +39,8 @@
 #endif
 #endif 
 
-#define BACKBUFFER_WIDTH	800
-#define BACKBUFFER_HEIGHT	600
+#define BACKBUFFER_WIDTH	1024
+#define BACKBUFFER_HEIGHT	768
 
 #define VK_LW 0x57
 #define VK_LS 0x53

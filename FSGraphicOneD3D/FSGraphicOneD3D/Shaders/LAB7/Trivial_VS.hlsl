@@ -1,5 +1,5 @@
 
-cbuffer cbPerObject {
+cbuffer ConstPerObject {
 	float4x4 WVP;
 	int texIndex;
 };
