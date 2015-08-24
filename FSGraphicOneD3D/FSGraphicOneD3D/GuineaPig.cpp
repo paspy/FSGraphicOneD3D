@@ -111,40 +111,40 @@ void GuineaPig::BuildGeometryBuffers() {
 	// Clockwise
 	Vertex3D cubeVerteces[] = {
 		// Front Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f)),	// A
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f,  1.0f, -1.0f)),	// B
-		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f,  1.0f, -1.0f)),	// C
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, -1.0f, -1.0f)),	// D
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),	// A
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),	// B
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),	// C
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f)),	// D
 
 		// Back Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, -1.0f, +1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, -1.0f, +1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f,  1.0f, +1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f,  1.0f, +1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f, +1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f,  1.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(0.0f, 0.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, +1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(0.0f, 0.0f, +1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, +1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(0.0f, 0.0f, +1.0f)),
 
 		// Top Face
-		Vertex3D(XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, +1.0f, -1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, +1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f, +1.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, +1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f, +1.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, +1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(0.0f, +1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, +1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(0.0f, +1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, +1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(0.0f, +1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, +1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(0.0f, +1.0f, 0.0f)),
 
 		// Bottom Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, -1.0f, -1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f, -1.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f, -1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(0.0f, -1.0f, 0.0f)),
 
 		// Left Face
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, -1.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f,  1.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f,  1.0f, -1.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, -1.0f, -1.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f)),
 
 		// Right Face
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, -1.0f, -1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f,  1.0f, -1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f,  1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f,  1.0f,  1.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, -1.0f,  1.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(0.0f,  1.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f, -1.0f), XMFLOAT2(0.0f,  0.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f,  1.0f,  1.0f), XMFLOAT2(0.25f, 0.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, -1.0f,  1.0f), XMFLOAT2(0.25f, 1.0f), XMFLOAT3(+1.0f, 0.0f, 0.0f)),
 	};
 
 	DWORD cubeIndices[] = {
@@ -358,7 +358,7 @@ void GuineaPig::BuildTextureAndState() {
 void GuineaPig::BuildLighting() {
 	m_baseLight.direction = XMFLOAT3(0.25f, 0.5f, -1.0f);
 	m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_baseLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_baseLight.diffuse = XMFLOAT4(1.2f, 1.2f, 1.2f, 1.2f);
 }
 
 void GuineaPig::BuildShader() {
@@ -450,7 +450,7 @@ void GuineaPig::UpdateScene(double _dt) {
 	if ((int)texIdx > 3) texIdx = 0;
 
 	groundWorldMat = XMMatrixIdentity();
-	groundWorldMat = XMMatrixScaling(500.0f, 10.0f, 500.0f)*XMMatrixTranslation(0, -10, 0);
+	groundWorldMat = XMMatrixScaling(500.0f, 10.0f, 500.0f)*XMMatrixTranslation(0, -2.0f, 0);
 
 	cubeWorldMat = XMMatrixIdentity();
 	XMVECTOR rotAxis_X = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
@@ -481,10 +481,7 @@ void GuineaPig::DrawScene() {
 	//Set the default blend state (no blending) for opaque objects
 	m_d3dImmediateContext->OMSetBlendState(0, 0, 0xffffffff);
 
-	//Render opaque objects//
-
-	//Set the blend state for transparent objects
-	m_d3dImmediateContext->OMSetBlendState(m_blendTransparency, blendFactor, 0xffffffff);
+	//sRender opaque objects //
 
 	//*****Transparency Depth Ordering*****//
 	// Find which transparent object is further from the camera
@@ -542,6 +539,9 @@ void GuineaPig::DrawScene() {
 	// Set Shader Resources and Samplers
 	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubeShaderResView);
 	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubeTexSamplerState);
+
+	//Set the blend state for transparent objects
+	m_d3dImmediateContext->OMSetBlendState(m_blendTransparency, blendFactor, 0xffffffff);
 
 	// draw two cubes
 	m_cbCubeObject.WVP = XMMatrixTranspose(cubeWorldMat * m_camView * m_camProjection);
