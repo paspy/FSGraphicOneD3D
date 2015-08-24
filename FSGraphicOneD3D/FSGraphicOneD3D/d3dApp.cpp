@@ -1,5 +1,5 @@
 #include "d3dApp.h"
-#include "LAB10.h"
+#include "GuineaPig.h"
 
 #include <Windowsx.h>
 #include <sstream>

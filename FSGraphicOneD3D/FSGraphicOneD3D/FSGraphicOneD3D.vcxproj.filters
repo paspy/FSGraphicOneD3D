@@ -33,7 +33,7 @@
     <ClCompile Include="XTime.cpp">
       <Filter>D3D</Filter>
     </ClCompile>
-    <ClCompile Include="LAB10.cpp">
+    <ClCompile Include="GuineaPig.cpp">
       <Filter>LABs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,10 +50,16 @@
     <ClInclude Include="D3DUtils.h">
       <Filter>D3D</Filter>
     </ClInclude>
-    <ClInclude Include="LAB10.h">
+    <ClInclude Include="Resource\numbers_test.h">
+      <Filter>LABs\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="GuineaPig.h">
       <Filter>LABs</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\numbers_test.h">
+    <ClInclude Include="Resource\grass_diffuse.h">
+      <Filter>LABs\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\grass_normal.h">
       <Filter>LABs\Textures</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,15 +20,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dApp.cpp" />
-    <ClCompile Include="LAB10.cpp" />
+    <ClCompile Include="GuineaPig.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D3DUtils.h" />
     <ClInclude Include="d3dApp.h" />
-    <ClInclude Include="LAB10.h" />
+    <ClInclude Include="GuineaPig.h" />
     <ClInclude Include="Mathlib.h" />
+    <ClInclude Include="Resource\grass_diffuse.h" />
+    <ClInclude Include="Resource\grass_normal.h" />
     <ClInclude Include="Resource\numbers_test.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
