@@ -31,8 +31,8 @@ float4 main(VS_OUTPUT input) : SV_TARGET {
 
 	float3 finalColor;
 
-	finalColor = diffuse * baseLight.ambient;
-	finalColor += saturate(dot(baseLight.direction, input.Normal) * baseLight.diffuse * diffuse);
+	finalColor = (diffuse * baseLight.ambient).rgb;
+	finalColor += (saturate(dot(baseLight.direction, input.Normal) * baseLight.diffuse * diffuse)).rgb;
 
 	if (input.Color.x == 0 &&
 		input.Color.y == 0 &&

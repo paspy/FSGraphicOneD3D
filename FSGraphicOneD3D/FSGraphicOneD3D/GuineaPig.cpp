@@ -215,10 +215,10 @@ void GuineaPig::BuildGroundBuffers() {
 
 	//Create the vertex buffer
 	Vertex3D groundVerts[] = {
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT2(100.0f, 100.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, -1.0f), XMFLOAT2(  0.0f, 100.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		Vertex3D(XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT2(  0.0f,   0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
-		Vertex3D(XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT2(100.0f,   0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT2(100.0f, 100.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, 0.0f, -1.0f), XMFLOAT2(  0.0f, 100.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(+1.0f, 0.0f, +1.0f), XMFLOAT2(  0.0f,   0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
+		Vertex3D(XMFLOAT3(-1.0f, 0.0f, +1.0f), XMFLOAT2(100.0f,   0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f)),
 	};
 
 	DWORD gourndIndices[] = {
@@ -363,9 +363,9 @@ void GuineaPig::BuildLighting() {
 
 void GuineaPig::BuildShader() {
 	HR(m_d3dDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &m_vertexShader));
-	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
 
 	HR(m_d3dDevice->CreatePixelShader(Trivial_PS, sizeof(Trivial_PS), NULL, &m_pixelShader));
+	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
 	m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
 
 }
@@ -450,7 +450,7 @@ void GuineaPig::UpdateScene(double _dt) {
 	if ((int)texIdx > 3) texIdx = 0;
 
 	groundWorldMat = XMMatrixIdentity();
-	groundWorldMat = XMMatrixScaling(500.0f, 2.0f, 500.0f);
+	groundWorldMat = XMMatrixScaling(500.0f, 10.0f, 500.0f)*XMMatrixTranslation(0, -10, 0);
 
 	cubeWorldMat = XMMatrixIdentity();
 	XMVECTOR rotAxis_X = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
@@ -516,6 +516,10 @@ void GuineaPig::DrawScene() {
 	m_d3dImmediateContext->UpdateSubresource(m_cbPerFrameBuffer, 0, NULL, &m_cbPerFrame, 0, 0);
 	m_d3dImmediateContext->PSSetConstantBuffers(0, 1, &m_cbPerFrameBuffer);
 
+	// reset shaders
+	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
+	m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
+
 	UINT stride = sizeof(Vertex3D), offset = 0;
 
 	// Set Shader Resources and Samplers
@@ -524,7 +528,7 @@ void GuineaPig::DrawScene() {
 
 	// Draw Ground
 	m_cbGroundObject.WVP = XMMatrixTranspose(groundWorldMat * m_camView * m_camProjection);
-	m_cbGroundObject.World = groundWorldMat;
+	m_cbGroundObject.World = XMMatrixTranspose(groundWorldMat);
 	m_d3dImmediateContext->UpdateSubresource(m_cbGroundBuffer, 0, NULL, &m_cbGroundObject, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbGroundBuffer);
 	// Set verts buffer
@@ -541,7 +545,7 @@ void GuineaPig::DrawScene() {
 
 	// draw two cubes
 	m_cbCubeObject.WVP = XMMatrixTranspose(cubeWorldMat * m_camView * m_camProjection);
-	m_cbCubeObject.World = cubeWorldMat;
+	m_cbCubeObject.World = XMMatrixTranspose(cubeWorldMat);
 	m_d3dImmediateContext->UpdateSubresource(m_cbCubeBuffer, 0, NULL, &m_cbCubeObject, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbCubeBuffer);
 	// Set verts buffer
