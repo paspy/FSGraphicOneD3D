@@ -5,8 +5,6 @@ cbuffer ConstPerObject {
 	int texIndex;
 };
 
-
-
 // textures!
 Texture2D ObjTexture;
 SamplerState ObjSamplerState;

@@ -1,6 +1,8 @@
 #pragma once
 #include "d3dApp.h"
 
+#include "DDSTextureLoader/DDSTextureLoader.h"
+
 typedef struct Vertex3D {
 	Vertex3D() {}
 	Vertex3D(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
@@ -33,7 +35,6 @@ struct ConstPerFrame {
 	BaseLight baseLight;
 };
 
-
 class GuineaPig : public D3DApp {
 	public:
 		GuineaPig(HINSTANCE hinst);
@@ -51,6 +52,8 @@ class GuineaPig : public D3DApp {
 		void OnMouseMove(WPARAM _btnState, int _x, int _y);
 
 	private:
+		void BuildSphere(int _latLines, int _longLines);
+
 		void BuildObjConstBuffer();
 		void BuildGeometryBuffers();
 		void BuildGroundBuffers();
@@ -61,7 +64,27 @@ class GuineaPig : public D3DApp {
 		void BuildRenderStates();
 
 	private:
+		// sky box mapping
+		ID3D11Buffer					*m_sphereIndexBuffer	= nullptr;
+		ID3D11Buffer					*m_sphereVertBuffer		= nullptr;
 
+		ID3D11VertexShader				*m_skyboxVertexShader	= nullptr;
+		ID3D11PixelShader				*m_skyboxPixelShader	= nullptr;
+
+		ID3D11InputLayout				*m_skyboxInputLayout			= nullptr;
+
+
+		ID3D11ShaderResourceView		*m_skyboxShaderResView	= nullptr;
+
+		ID3D11DepthStencilState			*m_skyboxDSLessEqual	= nullptr;
+		ID3D11RasterizerState			*m_skyboxRasterState	= nullptr;
+
+		int								m_numSphereVertices;
+		int								m_numSphereFaces;
+
+		XMMATRIX						m_sphereWorld;
+
+		// objects
 		ID3D11Buffer					*m_cubeVertexBuffer;
 		ID3D11Buffer					*m_cubeIndexBuffer;
 		ID3D11Buffer					*m_groundVertexBuffer;
@@ -72,10 +95,10 @@ class GuineaPig : public D3DApp {
 		ID3D11PixelShader				*m_pixelShader;
 
 		ConstPerObject					m_cbCubeObject;
-		ID3D11Buffer					*m_cbCubeBuffer = nullptr;
+		ID3D11Buffer					*m_cbCubeBuffer			= nullptr;
 
 		ConstPerObject					m_cbGroundObject;
-		ID3D11Buffer					*m_cbGroundBuffer = nullptr;
+		ID3D11Buffer					*m_cbGroundBuffer		= nullptr;
 
 		// Object
 		vector<Vertex3D>				m_gridVerts;

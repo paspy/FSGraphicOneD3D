@@ -22,6 +22,9 @@
     <Filter Include="LABs\Textures">
       <UniqueIdentifier>{3f0b75c9-565e-4dad-a779-491a4966b8ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="D3D\DDSLoader">
+      <UniqueIdentifier>{ef0b1feb-0c66-40e2-8c7b-03ce4c00484f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,6 +38,12 @@
     </ClCompile>
     <ClCompile Include="GuineaPig.cpp">
       <Filter>LABs</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
+      <Filter>D3D\DDSLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader\pch.cpp">
+      <Filter>D3D\DDSLoader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -62,12 +71,33 @@
     <ClInclude Include="Resource\grass_normal.h">
       <Filter>LABs\Textures</Filter>
     </ClInclude>
+    <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
+      <Filter>D3D\DDSLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader\dds.h">
+      <Filter>D3D\DDSLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader\DirectXHelpers.h">
+      <Filter>D3D\DDSLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader\pch.h">
+      <Filter>D3D\DDSLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader\PlatformHelpers.h">
+      <Filter>D3D\DDSLoader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\LAB7\Trivial_PS.hlsl">
       <Filter>LABs\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\LAB7\Trivial_VS.hlsl">
+      <Filter>LABs\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Skybox_PS.hlsl">
+      <Filter>LABs\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Skybox_VS.hlsl">
       <Filter>LABs\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

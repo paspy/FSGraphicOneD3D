@@ -3,6 +3,8 @@
 // shader byte code
 #include "Trivial_VS.csh"
 #include "Trivial_PS.csh"
+#include "Skybox_VS.csh"
+#include "Skybox_PS.csh"
 
 // texture header file
 #include "Resource/numbers_test.h"
@@ -21,6 +23,16 @@ GuineaPig::GuineaPig(HINSTANCE hinst) : D3DApp(hinst),
 }
 
 GuineaPig::~GuineaPig() {
+	// release skybox ptr
+	ReleaseCOM(m_sphereIndexBuffer);
+	ReleaseCOM(m_sphereVertBuffer);
+	ReleaseCOM(m_skyboxVertexShader);
+	ReleaseCOM(m_skyboxPixelShader);
+	ReleaseCOM(m_skyboxShaderResView);
+	ReleaseCOM(m_skyboxDSLessEqual);
+	ReleaseCOM(m_skyboxRasterState);
+
+
 	// release geometries ptr
 	ReleaseCOM(m_cubeVertexBuffer);
 	ReleaseCOM(m_cubeIndexBuffer);
@@ -33,6 +45,7 @@ GuineaPig::~GuineaPig() {
 
 	// release layout ptr
 	ReleaseCOM(m_inputLayout);
+	ReleaseCOM(m_skyboxInputLayout);
 
 	// release constant buffer ptr
 	ReleaseCOM(m_cbCubeBuffer);
@@ -76,6 +89,123 @@ bool GuineaPig::Init() {
 
 void GuineaPig::OnResize() {
 	D3DApp::OnResize();
+
+}
+
+void GuineaPig::BuildSphere(int _latLines, int _longLines) {
+	m_numSphereVertices = ((_latLines - 2) * _longLines) + 2;
+	m_numSphereFaces = ((_latLines - 3)*(_longLines)* 2) + (_longLines * 2);
+
+	float sphereYaw = 0.0f;
+	float spherePitch = 0.0f;
+	XMMATRIX RotationX;
+	XMMATRIX RotationY;
+	XMMATRIX RotationZ;
+
+	vector<Vertex3D> vertices(m_numSphereVertices);
+
+	XMVECTOR currVertPos = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+
+	vertices[0].pos.x = 0.0f;
+	vertices[0].pos.y = 0.0f;
+	vertices[0].pos.z = 1.0f;
+
+	for (int i = 0; i < _latLines - 2; i++) {
+		spherePitch = (i + 1) * (3.14f / (_latLines - 1));
+		RotationX = XMMatrixRotationX(spherePitch);
+		for (int j = 0; j < _longLines; j++) {
+			sphereYaw = j * (6.28f / (_longLines));
+			RotationY = XMMatrixRotationZ(sphereYaw);
+			currVertPos = XMVector3TransformNormal(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), (RotationX * RotationY));
+			currVertPos = XMVector3Normalize(currVertPos);
+			vertices[i*_longLines + j + 1].pos.x = XMVectorGetX(currVertPos);
+			vertices[i*_longLines + j + 1].pos.y = XMVectorGetY(currVertPos);
+			vertices[i*_longLines + j + 1].pos.z = XMVectorGetZ(currVertPos);
+		}
+	}
+
+	vertices[m_numSphereVertices - 1].pos.x = 0.0f;
+	vertices[m_numSphereVertices - 1].pos.y = 0.0f;
+	vertices[m_numSphereVertices - 1].pos.z = -1.0f;
+
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
+
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex3D) * m_numSphereVertices;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferData;
+
+	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
+	vertexBufferData.pSysMem = &vertices[0];
+	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_sphereVertBuffer));
+
+	std::vector<DWORD> indices(m_numSphereFaces * 3);
+
+	int k = 0;
+	for (int l = 0; l < _longLines - 1; ++l) {
+		indices[k] = 0;
+		indices[k + 1] = l + 1;
+		indices[k + 2] = l + 2;
+		k += 3;
+	}
+
+	indices[k] = 0;
+	indices[k + 1] = _longLines;
+	indices[k + 2] = 1;
+	k += 3;
+
+	for (int i = 0; i < _latLines - 3; i++) {
+		for (int j = 0; j < _longLines - 1; j++) {
+			indices[k] = i*_longLines + j + 1;
+			indices[k + 1] = i*_longLines + j + 2;
+			indices[k + 2] = (i + 1)*_longLines + j + 1;
+
+			indices[k + 3] = (i + 1)*_longLines + j + 1;
+			indices[k + 4] = i*_longLines + j + 2;
+			indices[k + 5] = (i + 1)*_longLines + j + 2;
+
+			k += 6; // next quad
+		}
+
+		indices[k] = (i*_longLines) + _longLines;
+		indices[k + 1] = (i*_longLines) + 1;
+		indices[k + 2] = ((i + 1)*_longLines) + _longLines;
+
+		indices[k + 3] = ((i + 1)*_longLines) + _longLines;
+		indices[k + 4] = (i*_longLines) + 1;
+		indices[k + 5] = ((i + 1)*_longLines) + 1;
+
+		k += 6;
+	}
+
+	for (int l = 0; l < _longLines - 1; ++l) {
+		indices[k] = m_numSphereVertices - 1;
+		indices[k + 1] = (m_numSphereVertices - 1) - (l + 1);
+		indices[k + 2] = (m_numSphereVertices - 1) - (l + 2);
+		k += 3;
+	}
+
+	indices[k] = m_numSphereVertices - 1;
+	indices[k + 1] = (m_numSphereVertices - 1) - _longLines;
+	indices[k + 2] = m_numSphereVertices - 2;
+
+	D3D11_BUFFER_DESC indexBufferDesc;
+	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
+
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(DWORD) * m_numSphereFaces * 3;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA iinitData;
+
+	iinitData.pSysMem = &indices[0];
+	HR(m_d3dDevice->CreateBuffer(&indexBufferDesc, &iinitData, &m_sphereIndexBuffer));
 
 }
 
@@ -208,6 +338,8 @@ void GuineaPig::BuildGeometryBuffers() {
 	//UINT stride = sizeof(Vertex3D), offset = 0;
 	//m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_cubeVertexBuffer, &stride, &offset);
 	
+	BuildSphere(10, 10);
+
 	BuildGroundBuffers();
 }
 
@@ -303,12 +435,10 @@ void GuineaPig::BuildTextureAndState() {
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	//Create the Sample State
+	// Create the Sample State
 	HR(m_d3dDevice->CreateSamplerState(&sampDesc, &m_cubeTexSamplerState));
 
-
 	// create grass texture
-
 	ZeroMemory(&shaderResViewDesc, sizeof(shaderResViewDesc));
 	shaderResViewDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
 	shaderResViewDesc.Texture2D.MipLevels = grass_diffuse_numlevels;
@@ -350,8 +480,25 @@ void GuineaPig::BuildTextureAndState() {
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	//Create the Sample State
+	// Create the Sample State
 	HR(m_d3dDevice->CreateSamplerState(&sampDesc, &m_grassTexSamplerState));
+
+
+	// loading the skybox texture
+	ID3D11Texture2D* SkyboxTexture = nullptr;
+	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/skymap.dds", (ID3D11Resource**)&SkyboxTexture, &m_skyboxShaderResView));
+
+	D3D11_TEXTURE2D_DESC SBTextureDesc;
+	SkyboxTexture->GetDesc(&SBTextureDesc);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SMViewDesc;
+	SMViewDesc.Format = SBTextureDesc.Format;
+	SMViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+	SMViewDesc.TextureCube.MipLevels = SBTextureDesc.MipLevels;
+	SMViewDesc.TextureCube.MostDetailedMip = 0;
+
+	HR(m_d3dDevice->CreateShaderResourceView(SkyboxTexture, &SMViewDesc, &m_skyboxShaderResView));
+
 
 }
 
@@ -362,12 +509,16 @@ void GuineaPig::BuildLighting() {
 }
 
 void GuineaPig::BuildShader() {
+	// normal shader
 	HR(m_d3dDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &m_vertexShader));
-
 	HR(m_d3dDevice->CreatePixelShader(Trivial_PS, sizeof(Trivial_PS), NULL, &m_pixelShader));
-	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
-	m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
 
+	// skybox shader
+	HR(m_d3dDevice->CreateVertexShader(Skybox_VS, sizeof(Skybox_VS), NULL, &m_skyboxVertexShader));
+	HR(m_d3dDevice->CreatePixelShader(Skybox_PS, sizeof(Skybox_PS), NULL, &m_skyboxPixelShader));
+
+	//m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
+	//m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
 }
 
 void GuineaPig::BuildVertexLayout() {
@@ -377,13 +528,19 @@ void GuineaPig::BuildVertexLayout() {
 		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-
 	};
 
 	// Create the input layout
 	HR(m_d3dDevice->CreateInputLayout(vertLayout, 4, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
-	m_d3dImmediateContext->IASetInputLayout(m_inputLayout);
 
+	D3D11_INPUT_ELEMENT_DESC skyboxVertLayout[] = {
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	// Create the input layout
+	HR(m_d3dDevice->CreateInputLayout(skyboxVertLayout, 2 , Skybox_VS, sizeof(Skybox_VS), &m_skyboxInputLayout));
+	
 }
 
 void GuineaPig::BuildRenderStates() {
@@ -431,9 +588,37 @@ void GuineaPig::BuildRenderStates() {
 
 	cmdesc.FrontCounterClockwise = false;
 	HR(m_d3dDevice->CreateRasterizerState(&cmdesc, &m_cwCullingMode));
+
+	// skybox render state
+	ZeroMemory(&cmdesc, sizeof(D3D11_RASTERIZER_DESC));
+	cmdesc.FillMode = D3D11_FILL_SOLID;
+	cmdesc.CullMode = D3D11_CULL_NONE;
+
+	HR(m_d3dDevice->CreateRasterizerState(&cmdesc, &m_skyboxRasterState));
+
+	D3D11_DEPTH_STENCIL_DESC dssDesc;
+	ZeroMemory(&dssDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	dssDesc.DepthEnable = true;
+	dssDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dssDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+	HR(m_d3dDevice->CreateDepthStencilState(&dssDesc, &m_skyboxDSLessEqual));
 }
 
 void GuineaPig::UpdateScene(double _dt) {
+
+	// Update skybox
+
+	//Reset sphereWorld
+	m_sphereWorld = XMMatrixIdentity();
+
+	//Define sphereWorld's world space matrix
+	XMMATRIX scale = XMMatrixScaling(5.0f, 5.0f, 5.0f);
+	//Make sure the sphere is always centered around camera
+	XMMATRIX translation = XMMatrixTranslation(XMVectorGetX(m_camPosition), XMVectorGetY(m_camPosition), XMVectorGetZ(m_camPosition));
+
+	//Set sphereWorld's world space using the transformations
+	m_sphereWorld = scale * translation;
 
 	// Update objects
 	static double texIdx = 0;
@@ -450,7 +635,7 @@ void GuineaPig::UpdateScene(double _dt) {
 	if ((int)texIdx > 3) texIdx = 0;
 
 	groundWorldMat = XMMatrixIdentity();
-	groundWorldMat = XMMatrixScaling(500.0f, 10.0f, 500.0f)*XMMatrixTranslation(0, -2.0f, 0);
+	groundWorldMat = XMMatrixScaling(500.0f, 1.0f, 500.0f)*XMMatrixTranslation(0, 0.0f, 0);
 
 	cubeWorldMat = XMMatrixIdentity();
 	XMVECTOR rotAxis_X = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
@@ -458,7 +643,7 @@ void GuineaPig::UpdateScene(double _dt) {
 	XMVECTOR rotAxis_Z = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
 	XMMATRIX rotationMat =  XMMatrixRotationAxis(rotAxis_X, rot) * XMMatrixRotationAxis(rotAxis_Y, rot);
-	XMMATRIX translationMat = XMMatrixTranslation(0.0f, 0.0f, 1.0f);
+	XMMATRIX translationMat = XMMatrixTranslation(0.0f, 2.0f, 0.0f);
 
 	cubeWorldMat = rotationMat * translationMat;
 }
@@ -473,7 +658,37 @@ void GuineaPig::DrawScene() {
 	//Refresh the Depth/Stencil view
 	m_d3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+	UINT stride = sizeof(Vertex3D), offset = 0;
+
+	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// opaque objects drawing
+
+	// draw skybox
+	//Set the default blend state (no blending) for opaque objects
+	m_d3dImmediateContext->OMSetBlendState(0, 0, 0xffffffff);
+	//Set the spheres index buffer
+	m_d3dImmediateContext->IASetIndexBuffer(m_sphereIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	//Set the spheres vertex buffer
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_sphereVertBuffer, &stride, &offset);
+
+	//Set the WVP matrix and send it to the constant buffer in effect file
+	m_cbCubeObject.WVP = XMMatrixTranspose(m_sphereWorld * m_camView * m_camProjection);
+	m_cbCubeObject.World = XMMatrixTranspose(m_sphereWorld);
+	m_d3dImmediateContext->UpdateSubresource(m_cbCubeBuffer, 0, NULL, &m_cbCubeObject, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbCubeBuffer);
+	//Send our skymap resource view to pixel shader
+	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_skyboxShaderResView);
+	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubeTexSamplerState);
+
+	//Set the proper VS and PS shaders, and layout
+	m_d3dImmediateContext->VSSetShader(m_skyboxVertexShader, 0, 0);
+	m_d3dImmediateContext->PSSetShader(m_skyboxPixelShader, 0, 0);
+	m_d3dImmediateContext->IASetInputLayout(m_skyboxInputLayout);
+	//Set the new depth/stencil and RS states
+	m_d3dImmediateContext->OMSetDepthStencilState(m_skyboxDSLessEqual, 0);
+	m_d3dImmediateContext->RSSetState(m_skyboxRasterState);
+
+	m_d3dImmediateContext->DrawIndexed(m_numSphereFaces * 3, 0, 0);
 
 	//"fine-tune" the blending equation
 	float blendFactor[] = { 0.75f, 0.75f, 0.75f, 1.0f };
@@ -481,7 +696,40 @@ void GuineaPig::DrawScene() {
 	//Set the default blend state (no blending) for opaque objects
 	m_d3dImmediateContext->OMSetBlendState(0, 0, 0xffffffff);
 
-	//sRender opaque objects //
+	// apply lighting
+	m_cbPerFrame.baseLight = m_baseLight;
+	m_d3dImmediateContext->UpdateSubresource(m_cbPerFrameBuffer, 0, NULL, &m_cbPerFrame, 0, 0);
+	m_d3dImmediateContext->PSSetConstantBuffers(0, 1, &m_cbPerFrameBuffer);
+
+	// Set the default VS shader and depth/stencil state and layout
+	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
+	m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
+	m_d3dImmediateContext->OMSetDepthStencilState(NULL, 0);
+	m_d3dImmediateContext->IASetInputLayout(m_inputLayout);
+
+
+
+	// Set Shader Resources and Samplers
+	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_grassShaderResView);
+	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_grassTexSamplerState);
+
+	// Draw Ground
+	m_cbGroundObject.WVP = XMMatrixTranspose(groundWorldMat * m_camView * m_camProjection);
+	m_cbGroundObject.World = XMMatrixTranspose(groundWorldMat);
+	m_d3dImmediateContext->UpdateSubresource(m_cbGroundBuffer, 0, NULL, &m_cbGroundObject, 0, 0);
+	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbGroundBuffer);
+	// Set verts buffer
+	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_groundVertexBuffer, &stride, &offset);
+	// Set indeces buffer
+	m_d3dImmediateContext->IASetIndexBuffer(m_groundIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	m_d3dImmediateContext->RSSetState(m_antialiasedLine);
+	m_d3dImmediateContext->DrawIndexed(6, 0, 0);
+
+	// Set Shader Resources and Samplers
+	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubeShaderResView);
+	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubeTexSamplerState);
+
+	// Render opaque objects //
 
 	//*****Transparency Depth Ordering*****//
 	// Find which transparent object is further from the camera
@@ -508,40 +756,8 @@ void GuineaPig::DrawScene() {
 
 	//float gridDist = distX*distX + distY*distY + distZ*distZ;
 
-	// apply lighting
-	m_cbPerFrame.baseLight = m_baseLight;
-	m_d3dImmediateContext->UpdateSubresource(m_cbPerFrameBuffer, 0, NULL, &m_cbPerFrame, 0, 0);
-	m_d3dImmediateContext->PSSetConstantBuffers(0, 1, &m_cbPerFrameBuffer);
-
-	// reset shaders
-	m_d3dImmediateContext->VSSetShader(m_vertexShader, NULL, 0);
-	m_d3dImmediateContext->PSSetShader(m_pixelShader, NULL, 0);
-
-	UINT stride = sizeof(Vertex3D), offset = 0;
-
-	// Set Shader Resources and Samplers
-	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_grassShaderResView);
-	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_grassTexSamplerState);
-
-	// Draw Ground
-	m_cbGroundObject.WVP = XMMatrixTranspose(groundWorldMat * m_camView * m_camProjection);
-	m_cbGroundObject.World = XMMatrixTranspose(groundWorldMat);
-	m_d3dImmediateContext->UpdateSubresource(m_cbGroundBuffer, 0, NULL, &m_cbGroundObject, 0, 0);
-	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_cbGroundBuffer);
-	// Set verts buffer
-	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_groundVertexBuffer, &stride, &offset);
-	// Set indeces buffer
-	m_d3dImmediateContext->IASetIndexBuffer(m_groundIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	m_d3dImmediateContext->RSSetState(m_antialiasedLine);
-	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_d3dImmediateContext->DrawIndexed(6, 0, 0);
-
-	// Set Shader Resources and Samplers
-	m_d3dImmediateContext->PSSetShaderResources(0, 1, &m_cubeShaderResView);
-	m_d3dImmediateContext->PSSetSamplers(0, 1, &m_cubeTexSamplerState);
-
 	//Set the blend state for transparent objects
-	m_d3dImmediateContext->OMSetBlendState(m_blendTransparency, blendFactor, 0xffffffff);
+	//m_d3dImmediateContext->OMSetBlendState(m_blendTransparency, blendFactor, 0xffffffff);
 
 	// draw two cubes
 	m_cbCubeObject.WVP = XMMatrixTranspose(cubeWorldMat * m_camView * m_camProjection);
@@ -552,7 +768,6 @@ void GuineaPig::DrawScene() {
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_cubeVertexBuffer, &stride, &offset);
 	// Set indeces buffer
 	m_d3dImmediateContext->IASetIndexBuffer(m_cubeIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Send conterclockwise culling cube first!
 	m_d3dImmediateContext->RSSetState(m_ccwCullingMode);
@@ -562,6 +777,8 @@ void GuineaPig::DrawScene() {
 	m_d3dImmediateContext->RSSetState(m_cwCullingMode);
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
 
+	
+	
 	//Present the backbuffer to the screen
 	HR(m_swapChain->Present(0, 0));
 }
@@ -589,6 +806,7 @@ void GuineaPig::UpdateKeyboardInput(double _dt) {
 void GuineaPig::UpdateCamera() {
 	D3DApp::UpdateCamera();
 }
+
 
 void GuineaPig::OnMouseDown(WPARAM _btnState, int _x, int _y) {
 	m_lastMousePos.x = _x;
