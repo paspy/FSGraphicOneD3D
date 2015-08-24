@@ -28,7 +28,6 @@ class D3DApp {
 		virtual bool Init();
 		virtual void OnResize();
 		virtual void UpdateKeyboardInput(double _dt) = 0;
-		virtual void UpdateCamera() = 0;
 		virtual void UpdateScene(double _dt) = 0;
 		virtual void DrawScene() = 0;
 		virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -36,6 +35,9 @@ class D3DApp {
 		virtual void OnMouseDown(WPARAM _btnState, int _x, int _y) {}
 		virtual void OnMouseUp	(WPARAM _btnState, int _x, int _y) {}
 		virtual void OnMouseMove(WPARAM _btnState, int _x, int _y) {}
+
+		virtual void InitCamera();
+		virtual void UpdateCamera();
 
 		bool Run();
 
@@ -48,7 +50,6 @@ class D3DApp {
 		// window related
 		HINSTANCE						application;
 		HWND							window;
-		//WNDPROC						appWndProc;
 		bool							m_appPaused;
 		bool							m_minimized;
 		bool							m_maximized;
@@ -75,10 +76,33 @@ class D3DApp {
 		ID3D11DepthStencilView			*m_depthStencilView;
 		D3D11_VIEWPORT					 m_screenViewport;	// non-pointer
 
+		// default View, Projection
+		XMMATRIX						m_camView;
+		XMMATRIX						m_camProjection;
+
+		// camera
+		XMVECTOR						m_camPosition;
+		XMVECTOR						m_camTarget;
+		XMVECTOR						m_camUp;
+
+		XMVECTOR						m_constDefaultForward;
+		XMVECTOR						m_camForward;
+		XMVECTOR						m_constDefaultRight;
+		XMVECTOR						m_camRight;
+
+		XMMATRIX						m_camRotationMatrix;
+
+		float							m_moveLeftRight;
+		float							m_moveBackForward;
+
+		float							m_camYaw;
+		float							m_camPitch;
+
 		// user control stuff
 		POINT							m_lastMousePos;
 		float							m_mouseAplha;
 		float							m_mouseBeta;
+
 };
 
 

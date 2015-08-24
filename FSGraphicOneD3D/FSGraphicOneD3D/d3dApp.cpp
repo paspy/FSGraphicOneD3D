@@ -44,12 +44,33 @@ D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
 	m_renderTargetView(nullptr),
 	m_depthStencilView(nullptr),
 
+	m_camView(XMMatrixIdentity()),
+	m_camProjection(XMMatrixIdentity()),
+	m_camUp(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)),
+
+	m_constDefaultForward(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f)),
+	m_camForward(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f)),
+	m_constDefaultRight(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f)),
+	m_camRight(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f)),
+
+	m_moveLeftRight(0.0f),
+	m_moveBackForward(-5.0f),
+	m_camYaw(0.0f),
+	m_camPitch(0.0f),
+
 	m_mouseAplha(XM_PI),
 	m_mouseBeta(XM_PI)
+
 {
 	ZeroMemory(&m_screenViewport, sizeof(D3D11_VIEWPORT));
 	m_lastMousePos.x = 0;
 	m_lastMousePos.y = 0;
+
+	// default camera initalize
+	m_camPosition = XMVectorSet(0.0f, 0.0f, -0.5f, 1.0f);
+	m_camTarget = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+	m_camView = XMMatrixLookAtLH(m_camPosition, m_camTarget, m_camUp);
+
 	g_d3dApp = this;
 }
 
@@ -209,6 +230,38 @@ bool D3DApp::InitDirect3D() {
 	return true;
 }
 
+void D3DApp::InitCamera() {
+	// set up projection mat
+	m_camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f);
+
+}
+
+void D3DApp::UpdateCamera() {
+	m_camRotationMatrix = XMMatrixRotationRollPitchYaw(m_camPitch, m_camYaw, 0);
+	m_camTarget = XMVector3TransformCoord(m_constDefaultForward, m_camRotationMatrix);
+
+	m_camTarget = XMVector3Normalize(m_camTarget);
+
+	XMMATRIX RotateYTempMatrix;
+
+	RotateYTempMatrix = XMMatrixRotationY(m_camYaw);
+
+	//camForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);	// walk on ground
+
+	m_camForward = m_camTarget;
+
+	m_camRight = XMVector3TransformCoord(m_constDefaultRight, RotateYTempMatrix);
+
+	m_camUp = XMVector3TransformCoord(m_camUp, RotateYTempMatrix);
+	m_camPosition += m_moveLeftRight*m_camRight + m_moveBackForward*m_camForward;
+	m_camTarget += m_camPosition;
+
+	m_camView = XMMatrixLookAtLH(m_camPosition, m_camTarget, m_camUp);
+
+	m_moveLeftRight = 0.0f;
+	m_moveBackForward = 0.0f;
+}
+
 void D3DApp::OnResize() {
 	assert(m_d3dImmediateContext);
 	assert(m_d3dDevice);
@@ -267,13 +320,7 @@ void D3DApp::OnResize() {
 
 	m_d3dImmediateContext->RSSetViewports(1, &m_screenViewport);
 
-
-	LAB10 *lab10 = nullptr;
-	lab10 = dynamic_cast<LAB10*>(g_d3dApp);
-
-	if (lab10) {
-		lab10->SetCamProj(XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f));
-	}
+	InitCamera();
 }
 
 void D3DApp::ShowFPS() {
@@ -293,6 +340,7 @@ void D3DApp::ShowFPS() {
 		timeElapsed += 1.0f;
 	}
 }
+
 
 bool D3DApp::Run() {
 	if (!m_timerStop) m_timer.Signal();

@@ -33,10 +33,8 @@ class LAB10 : public D3DApp {
 		void OnMouseUp	(WPARAM _btnState, int _x, int _y);
 		void OnMouseMove(WPARAM _btnState, int _x, int _y);
 
-		void SetCamProj(XMMATRIX _c) { camProjection = _c; }
-
 	private:
-		void BuildCameraBuffer();
+		void BuildObjConstBuffer();
 		void BuildGeometryBuffers();
 		void BuildGridBuffers();
 		void BuildTextureAndState();
@@ -56,38 +54,13 @@ class LAB10 : public D3DApp {
 		ConstPerObject					m_cbPerObj;
 		ID3D11Buffer					*m_constPerObjectBuffer = nullptr;
 
-		// World, View, Projection Mat
-		XMMATRIX						WVP;
-		XMMATRIX						World;
-		XMMATRIX						camView;
-		XMMATRIX						camProjection;
-
-		// Camera
-		XMVECTOR						camPosition;
-		XMVECTOR						camTarget;
-		XMVECTOR						camUp;
-
-		XMVECTOR						DefaultForward			= XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-		XMVECTOR						DefaultRight			= XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-		XMVECTOR						camForward				= XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-		XMVECTOR						camRight				= XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-
-		XMMATRIX						camRotationMatrix;
-		XMMATRIX						groundWorld;
-
-		float							moveLeftRight			= 0.0f;
-		float							moveBackForward			= -5.0f;
-
-		float							camYaw					= 0.0f;
-		float							camPitch				= 0.0f;
-
 		// Object
-		vector<Vertex3D>			m_gridVerts;
+		vector<Vertex3D>				m_gridVerts;
 		XMMATRIX						cubeWorldMat;
 		XMMATRIX						gridWorldMat;
 
 		// Render States
-		ID3D11RasterizerState			*m_wireFrame			= nullptr;
+		ID3D11RasterizerState			*m_antialiasedLine			= nullptr;
 
 		// texture
 		ID3D11ShaderResourceView		*m_cubeShaderResView	= nullptr;

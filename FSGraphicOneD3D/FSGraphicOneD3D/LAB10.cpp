@@ -16,33 +16,31 @@ LAB10::LAB10(HINSTANCE hinst) : D3DApp(hinst),
 	m_vertexShader(nullptr),
 	m_pixelShader(nullptr) {
 
-	World = XMMatrixIdentity();
-	camView = XMMatrixIdentity();
-	camProjection = XMMatrixIdentity();
-
-	camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
 }
 
 LAB10::~LAB10() {
+	// release geometries ptr
 	ReleaseCOM(m_cubeVertexBuffer);
+	ReleaseCOM(m_cubeIndexBuffer);
 	ReleaseCOM(m_gridVertexBuffer);
+
+	// release shader ptr
 	ReleaseCOM(m_vertexShader);
 	ReleaseCOM(m_pixelShader);
+
+	// release layout ptr
 	ReleaseCOM(m_inputLayout);
 
+	// release constant buffer ptr
 	ReleaseCOM(m_constPerObjectBuffer);
-
-	ReleaseCOM(m_cubeIndexBuffer);
-
-	ReleaseCOM(m_wireFrame);
 
 	// release texture ptr
 	ReleaseCOM(m_cubeShaderResView);
 	ReleaseCOM(m_cubeTexture2D);
 	ReleaseCOM(m_cubesTexSamplerState);
 
-
+	// release render state ptr
+	ReleaseCOM(m_antialiasedLine);
 	ReleaseCOM(m_blendTransparency);
 	ReleaseCOM(m_cwCullingMode);
 	ReleaseCOM(m_ccwCullingMode);
@@ -52,7 +50,7 @@ bool LAB10::Init() {
 	if (!D3DApp::Init())
 		return false;
 
-	BuildCameraBuffer();
+	BuildObjConstBuffer();
 	BuildGeometryBuffers(); 
 	BuildTextureAndState();
 	BuildVertexLayout();
@@ -67,7 +65,7 @@ void LAB10::OnResize() {
 
 }
 
-void LAB10::BuildCameraBuffer() {
+void LAB10::BuildObjConstBuffer() {
 	D3D11_BUFFER_DESC cbbd;
 	ZeroMemory(&cbbd, sizeof(D3D11_BUFFER_DESC));
 
@@ -78,13 +76,6 @@ void LAB10::BuildCameraBuffer() {
 	cbbd.MiscFlags = 0;
 
 	HR(m_d3dDevice->CreateBuffer(&cbbd, NULL, &m_constPerObjectBuffer));
-
-	// set up camera & projection mat
-	camPosition = XMVectorSet(0.0f, 0.0f, -0.5f, 1.0f);
-	camTarget = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
-	camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, AspectRatio(), 1.0f, 1000.0f);
-	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
-
 }
 
 void LAB10::BuildGeometryBuffers() {
@@ -302,11 +293,7 @@ void LAB10::BuildRenderStates() {
 	rasterDesc.CullMode = D3D11_CULL_NONE;
 	rasterDesc.AntialiasedLineEnable = true;
 
-	HR(m_d3dDevice->CreateRasterizerState(&rasterDesc, &m_wireFrame));
-
-	// Apply change to render state. Default: NULL
-	//m_d3dImmediateContext->RSSetState(m_wireFrame);		- disabled when blending
-	//m_d3dImmediateContext->RSSetState(NULL);
+	HR(m_d3dDevice->CreateRasterizerState(&rasterDesc, &m_antialiasedLine));
 
 	// create blending description
 	D3D11_BLEND_DESC blendDesc;
@@ -346,48 +333,25 @@ void LAB10::BuildRenderStates() {
 void LAB10::UpdateKeyboardInput(double _dt) {
 
 	if (GetAsyncKeyState(VK_LW)) {
-		moveBackForward += (float)_dt * 10.0f;
+		m_moveBackForward += (float)_dt * 10.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LS)) {
-		moveBackForward -= (float)_dt * 10.0f;
+		m_moveBackForward -= (float)_dt * 10.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LA)) {
-		moveLeftRight -= (float)_dt * 10.0f;
+		m_moveLeftRight -= (float)_dt * 10.0f;
 	}
 
 	if (GetAsyncKeyState(VK_LD)) {
-		moveLeftRight += (float)_dt * 10.0f;
+		m_moveLeftRight += (float)_dt * 10.0f;
 	}
 
 }
 
 void LAB10::UpdateCamera() {
-
-	camRotationMatrix = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0);
-	camTarget = XMVector3TransformCoord(DefaultForward, camRotationMatrix);
-
-	camTarget = XMVector3Normalize(camTarget);
-
-	XMMATRIX RotateYTempMatrix;
-
-	RotateYTempMatrix = XMMatrixRotationY(camYaw);
-
-	//camForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);	// walk on ground
-
-	camForward = camTarget;
-
-	camRight = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
-
-	camUp = XMVector3TransformCoord(camUp, RotateYTempMatrix);
-	camPosition += moveLeftRight*camRight + moveBackForward*camForward;
-	camTarget += camPosition;
-
-	camView = XMMatrixLookAtLH(camPosition, camTarget, camUp);
-
-	moveLeftRight = 0.0f;
-	moveBackForward = 0.0f;
+	D3DApp::UpdateCamera();
 }
 
 void LAB10::UpdateScene(double _dt) {
@@ -417,7 +381,6 @@ void LAB10::UpdateScene(double _dt) {
 	XMMATRIX translationMat = XMMatrixTranslation(0.0f, 0.0f, -2.0f);
 
 	cubeWorldMat = rotationMat * translationMat;
-
 
 }
 
@@ -475,19 +438,17 @@ void LAB10::DrawScene() {
 
 	UINT stride = sizeof(Vertex3D), offset = 0;
 	// Draw Grid
-	WVP = gridWorldMat * camView * camProjection;
-	m_cbPerObj.WVP = XMMatrixTranspose(WVP);
+	m_cbPerObj.WVP = XMMatrixTranspose(gridWorldMat * m_camView * m_camProjection);
 	m_d3dImmediateContext->UpdateSubresource(m_constPerObjectBuffer, 0, NULL, &m_cbPerObj, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_constPerObjectBuffer);
-	m_d3dImmediateContext->RSSetState(m_wireFrame);	// Set raster setting
+	m_d3dImmediateContext->RSSetState(m_antialiasedLine);	// Set raster state - antialising
 	m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_gridVertexBuffer, &stride, &offset);
 	m_d3dImmediateContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
 	m_d3dImmediateContext->Draw((UINT)m_gridVerts.size(), 0);
 
 	// draw two cubes
-	WVP = cubeWorldMat * camView * camProjection;
-	m_cbPerObj.WVP = XMMatrixTranspose(WVP);
+	m_cbPerObj.WVP = XMMatrixTranspose(cubeWorldMat * m_camView * m_camProjection);
 	m_d3dImmediateContext->UpdateSubresource(m_constPerObjectBuffer, 0, NULL, &m_cbPerObj, 0, 0);
 	m_d3dImmediateContext->VSSetConstantBuffers(0, 1, &m_constPerObjectBuffer);
 
@@ -501,9 +462,6 @@ void LAB10::DrawScene() {
 	// Send clockwise culling cube following the conter-colockwise culling cube!
 	m_d3dImmediateContext->RSSetState(m_cwCullingMode);
 	m_d3dImmediateContext->DrawIndexed(36, 0, 0);
-
-
-
 
 	//Present the backbuffer to the screen
 	HR(m_swapChain->Present(0, 0));
@@ -523,10 +481,10 @@ void LAB10::OnMouseUp(WPARAM _btnState, int _x, int _y) {
 void LAB10::OnMouseMove(WPARAM _btnState, int _x, int _y) {
 	if ((MK_RBUTTON & _btnState) != 0) {
 
-		camYaw +=  0.01f*(_x - m_lastMousePos.x);
-		camPitch += 0.01f*(_y - m_lastMousePos.y);
+		m_camYaw +=  0.01f*(_x - m_lastMousePos.x);
+		m_camPitch += 0.01f*(_y - m_lastMousePos.y);
 
-		camPitch = Mathlib::Clamp(camPitch, -XM_PIDIV2 + 0.01f, XM_PIDIV2 - 0.01f);
+		m_camPitch = Mathlib::Clamp(m_camPitch, -XM_PIDIV2 + 0.01f, XM_PIDIV2 - 0.01f);
 	} 
 
 	m_lastMousePos.x = _x;
