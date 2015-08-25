@@ -21,9 +21,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	return g_d3dApp->MsgProc(hWnd, message, wParam, lParam);
 }
 
-D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
+D3DApp::D3DApp(HINSTANCE hinst) :
 	application(hinst),
-	//appWndProc(proc),
 	m_mainWindTitle(L"DirectX 11 - Guinea Pig"),
 	m_d3dDriverType(D3D_DRIVER_TYPE_HARDWARE),
 	m_clientWidth(BACKBUFFER_WIDTH),
@@ -136,7 +135,7 @@ bool D3DApp::InitMainWindow() {
 		MessageBox(0, L"RegisterClass Failed.", 0, 0);
 		return false;
 	}
-	//RegisterClassEx(&wndClass);
+	RegisterClassEx(&wndClass);
 
 	RECT window_size = { 0, 0, m_clientWidth, m_clientHeight };
 
@@ -165,8 +164,8 @@ bool D3DApp::InitDirect3D() {
 #endif
 
 	D3D_FEATURE_LEVEL  FeatureLevelsRequested = D3D_FEATURE_LEVEL_11_0;
-	UINT               numLevelsRequested = 1;
 	D3D_FEATURE_LEVEL  FeatureLevelsSupported;
+	UINT               numLevelsRequested = 1;
 
 	// create a struct to hold information about the swap chain
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -220,7 +219,7 @@ bool D3DApp::InitDirect3D() {
 	ReleaseCOM(factoryPtr);
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		adapters[bestAdapterIndex],	// Multiple adapters
+		adapters[0],	// Multiple adapters
 		D3D_DRIVER_TYPE_UNKNOWN,	// Driver Type If you specify the adapter, you cannot specify the driver type
 		NULL,						// Software
 		createDeviceFlags,			// Flags
@@ -246,9 +245,6 @@ bool D3DApp::InitDirect3D() {
 
 	HR(m_d3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality));
 	assert(m_4xMsaaQuality > 0);
-
-
-
 
 	OnResize();
 
