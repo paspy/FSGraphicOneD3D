@@ -303,8 +303,8 @@ void LAB10::BuildRenderStates() {
 	ZeroMemory(&renderTargetBlendDesc, sizeof(renderTargetBlendDesc));
 
 	renderTargetBlendDesc.BlendEnable			= true;
-	renderTargetBlendDesc.SrcBlend				= D3D11_BLEND_SRC_COLOR;
-	renderTargetBlendDesc.DestBlend				= D3D11_BLEND_BLEND_FACTOR;
+	renderTargetBlendDesc.SrcBlend				= D3D11_BLEND_ONE;
+	renderTargetBlendDesc.DestBlend				= D3D11_BLEND_ZERO;
 	renderTargetBlendDesc.BlendOp				= D3D11_BLEND_OP_ADD;
 	renderTargetBlendDesc.SrcBlendAlpha			= D3D11_BLEND_ONE;
 	renderTargetBlendDesc.DestBlendAlpha		= D3D11_BLEND_ZERO;
@@ -378,9 +378,8 @@ void LAB10::UpdateScene(double _dt) {
 	XMVECTOR rotAxis_Z = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
 	XMMATRIX rotationMat =  XMMatrixRotationAxis(rotAxis_X, rot) * XMMatrixRotationAxis(rotAxis_Y, rot);
-	XMMATRIX translationMat = XMMatrixTranslation(0.0f, 0.0f, -2.0f);
 
-	cubeWorldMat = rotationMat * translationMat;
+	cubeWorldMat = rotationMat * cubeWorldMat;
 
 }
 
