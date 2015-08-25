@@ -24,7 +24,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 D3DApp::D3DApp(HINSTANCE hinst/*, WNDPROC proc*/) :
 	application(hinst),
 	//appWndProc(proc),
-	m_mainWindTitle(L"Graphic I - Chen Lu"),
+	m_mainWindTitle(L"DirectX 11 - Guinea Pig"),
 	m_d3dDriverType(D3D_DRIVER_TYPE_HARDWARE),
 	m_clientWidth(BACKBUFFER_WIDTH),
 	m_clientHeight(BACKBUFFER_HEIGHT),
@@ -204,10 +204,10 @@ bool D3DApp::InitDirect3D() {
 
 	UINT bestAdapterIndex = 0;
 	size_t bestMemSize = 0;
+	DXGI_ADAPTER_DESC desc;
 
 	for (UINT i = 0; factoryPtr->EnumAdapters(i, &adapterPtr) != DXGI_ERROR_NOT_FOUND; i++) {
 		adapters.push_back(adapterPtr);
-		DXGI_ADAPTER_DESC desc;
 		adapterPtr->GetDesc(&desc);
 
 		if (desc.DedicatedVideoMemory > bestMemSize) {
@@ -215,7 +215,8 @@ bool D3DApp::InitDirect3D() {
 			bestMemSize = desc.DedicatedVideoMemory;
 		}
 	}
-
+	adapters[bestAdapterIndex]->GetDesc(&desc);
+	m_deviceName = desc.Description;
 	ReleaseCOM(factoryPtr);
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
@@ -357,7 +358,7 @@ void D3DApp::ShowFPS() {
 		float mspf = 1000.0f / fps;
 		std::wostringstream outs;
 		outs.precision(6);
-		outs << m_mainWindTitle << L" - FPS: " << fps << L", Time: " << mspf << L" (ms)";
+		outs << m_mainWindTitle << L" - " << m_deviceName << L" - FPS: " << fps << L", Time: " << mspf << L" (ms)";
 		SetWindowText(window, outs.str().c_str());
 		// Reset for next average.
 		frameCnt = 0;

@@ -19,9 +19,6 @@
     <Filter Include="LABs\Shaders">
       <UniqueIdentifier>{d7e077e7-7ca6-4706-81c3-5670bf6f5ad7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LABs\Textures">
-      <UniqueIdentifier>{3f0b75c9-565e-4dad-a779-491a4966b8ef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="D3D\DDSLoader">
       <UniqueIdentifier>{ef0b1feb-0c66-40e2-8c7b-03ce4c00484f}</UniqueIdentifier>
     </Filter>
@@ -59,17 +56,8 @@
     <ClInclude Include="D3DUtils.h">
       <Filter>D3D</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\numbers_test.h">
-      <Filter>LABs\Textures</Filter>
-    </ClInclude>
     <ClInclude Include="GuineaPig.h">
       <Filter>LABs</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\grass_diffuse.h">
-      <Filter>LABs\Textures</Filter>
-    </ClInclude>
-    <ClInclude Include="Resource\grass_normal.h">
-      <Filter>LABs\Textures</Filter>
     </ClInclude>
     <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
       <Filter>D3D\DDSLoader</Filter>

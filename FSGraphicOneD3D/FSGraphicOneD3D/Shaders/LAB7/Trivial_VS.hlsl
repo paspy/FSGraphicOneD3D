@@ -29,7 +29,6 @@ VS_OUTPUT main(float4 inPos : POSITION,
 	//output.Normal = mul(float4(inNormal, 0.0), World).rgb;
 	output.Normal = mul(inNormal, (float3x3)World);
 
-	
 	output.Color = inColor;
 
 	output.TexCoord = inTexCoord;

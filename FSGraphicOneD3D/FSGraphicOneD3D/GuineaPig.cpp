@@ -483,23 +483,9 @@ void GuineaPig::BuildTextureAndState() {
 	// Create the Sample State
 	HR(m_d3dDevice->CreateSamplerState(&sampDesc, &m_grassTexSamplerState));
 
+	// loading the skybox texture - using dds loader
+	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/skymap.dds", NULL, &m_skyboxShaderResView));
 
-	// loading the skybox texture
-	ID3D11Texture2D* SkyboxTexture = nullptr;
-	HR(CreateDDSTextureFromFile(m_d3dDevice, L"Resource/skymap.dds", (ID3D11Resource**)&SkyboxTexture, NULL));
-
-	D3D11_TEXTURE2D_DESC SBTextureDesc;
-	SkyboxTexture->GetDesc(&SBTextureDesc);
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC SMViewDesc;
-	SMViewDesc.Format = SBTextureDesc.Format;
-	SMViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-	SMViewDesc.TextureCube.MipLevels = SBTextureDesc.MipLevels;
-	SMViewDesc.TextureCube.MostDetailedMip = 0;
-
-	HR(m_d3dDevice->CreateShaderResourceView(SkyboxTexture, &SMViewDesc, &m_skyboxShaderResView));
-
-	ReleaseCOM(SkyboxTexture);
 }
 
 void GuineaPig::BuildLighting() {

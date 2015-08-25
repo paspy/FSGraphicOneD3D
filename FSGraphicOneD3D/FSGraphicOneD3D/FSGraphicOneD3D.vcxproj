@@ -36,9 +36,6 @@
     <ClInclude Include="DDSTextureLoader\PlatformHelpers.h" />
     <ClInclude Include="GuineaPig.h" />
     <ClInclude Include="Mathlib.h" />
-    <ClInclude Include="Resource\grass_diffuse.h" />
-    <ClInclude Include="Resource\grass_normal.h" />
-    <ClInclude Include="Resource\numbers_test.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <ItemGroup>

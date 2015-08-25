@@ -63,6 +63,7 @@ class D3DApp {
 		// properties
 		D3D_DRIVER_TYPE					m_d3dDriverType;
 		wstring							m_mainWindTitle;
+		wstring							m_deviceName;
 		int								m_clientWidth;
 		int								m_clientHeight;
 		bool							m_enable4xMsaa;
