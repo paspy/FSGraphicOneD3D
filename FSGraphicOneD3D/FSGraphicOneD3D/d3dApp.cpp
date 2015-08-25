@@ -122,7 +122,7 @@ bool D3DApp::InitMainWindow() {
 	AdjustWindowRect(&window_size, WS_OVERLAPPEDWINDOW, false);
 
 	window = CreateWindow(L"DirectXApplication", m_mainWindTitle.c_str(),
-		WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
+		WS_OVERLAPPEDWINDOW /*& ~(WS_THICKFRAME | WS_MAXIMIZEBOX)*/,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		window_size.right - window_size.left,
@@ -198,7 +198,7 @@ bool D3DApp::InitDirect3D() {
 	ReleaseCOM(factoryPtr);
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		adapters[bestAdapterIndex],	// Multiple adapters
+		adapters[0],				// Multiple adapters
 		D3D_DRIVER_TYPE_UNKNOWN,	// Driver Type If you specify the adapter, you cannot specify the driver type
 		NULL,						// Software
 		createDeviceFlags,			// Flags
@@ -397,16 +397,8 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 					m_maximized = false;
 					OnResize();
 				} else if (m_resizing) {
-					// If user is dragging the resize bars, we do not resize 
-					// the buffers here because as the user continuously 
-					// drags the resize bars, a stream of WM_SIZE messages are
-					// sent to the window, and it would be pointless (and slow)
-					// to resize for each WM_SIZE message received from dragging
-					// the resize bars.  So instead, we reset after the user is 
-					// done resizing the window and releases the resize bars, which 
-					// sends a WM_EXITSIZEMOVE message.
+
 				} else {	
-					// API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 					OnResize();
 				}
 			}
