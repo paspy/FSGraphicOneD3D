@@ -89,7 +89,9 @@ class GuineaPig : public D3DApp {
 									bool _computeNormals);				//true to compute the normals, false to use the files normals
 
 	private:
-		void BuildSphere(int _latLines, int _longLines);
+		void BuildSphere(int _latLines, int _longLines,
+			ID3D11Buffer ** _vertBuffer, ID3D11Buffer ** _indexBuffer,
+			int &_numSphereVertices, int &_numSphereFaces);
 
 		void BuildObjConstBuffer();
 		void BuildGeometryBuffers();

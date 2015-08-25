@@ -108,33 +108,3 @@ class D3DApp {
 
 
 };
-
-
-
-typedef struct DVertex4 {
-	XMFLOAT3 pos;
-	XMVECTORF32 rgba;
-}*DVertex4_ptr;
-
-typedef struct DVertex4T {
-	XMFLOAT3 pos;		// 0 byte offset
-	XMFLOAT3 normal;	// 12 byte offset
-	XMFLOAT2 tex0;		// 24 byte offset
-	XMFLOAT2 tex1;		// 32 byte offset
-
-}*DVertex4T_ptr;
-
-
-//D3D11_INPUT_ELEMENT_DESC vertTexureLayout[] = {
-//	{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-//	{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-//	{ "TEXCOORD",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-//	{ "TEXCOORD",	1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
-//};
-
-/*
-VertexOut VS(float3 iPos : POSITION,
-float3 iNormal : NORMAL,
-float2 iTex0 : TEXCOORD0,
-float2 iTex1 : TEXCOORD1)
-*/

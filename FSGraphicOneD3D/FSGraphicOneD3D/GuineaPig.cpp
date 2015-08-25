@@ -101,9 +101,11 @@ void GuineaPig::OnResize() {
 
 }
 
-void GuineaPig::BuildSphere(int _latLines, int _longLines) {
-	m_numSphereVertices = ((_latLines - 2) * _longLines) + 2;
-	m_numSphereFaces = ((_latLines - 3)*(_longLines)* 2) + (_longLines * 2);
+void GuineaPig::BuildSphere(int _latLines, int _longLines,
+						   ID3D11Buffer ** _vertBuffer, ID3D11Buffer ** _indexBuffer,
+						    int &_numSphereVertices, int &_numSphereFaces) {
+	_numSphereVertices = ((_latLines - 2) * _longLines) + 2;
+	_numSphereFaces = ((_latLines - 3)*(_longLines)* 2) + (_longLines * 2);
 
 	float sphereYaw = 0.0f;
 	float spherePitch = 0.0f;
@@ -111,7 +113,7 @@ void GuineaPig::BuildSphere(int _latLines, int _longLines) {
 	XMMATRIX RotationY;
 	XMMATRIX RotationZ;
 
-	vector<Vertex3D> vertices(m_numSphereVertices);
+	vector<Vertex3D> vertices(_numSphereVertices);
 
 	XMVECTOR currVertPos = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 
@@ -133,15 +135,15 @@ void GuineaPig::BuildSphere(int _latLines, int _longLines) {
 		}
 	}
 
-	vertices[m_numSphereVertices - 1].pos.x = 0.0f;
-	vertices[m_numSphereVertices - 1].pos.y = 0.0f;
-	vertices[m_numSphereVertices - 1].pos.z = -1.0f;
+	vertices[_numSphereVertices - 1].pos.x = 0.0f;
+	vertices[_numSphereVertices - 1].pos.y = 0.0f;
+	vertices[_numSphereVertices - 1].pos.z = -1.0f;
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
 
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(Vertex3D) * m_numSphereVertices;
+	vertexBufferDesc.ByteWidth = sizeof(Vertex3D) * _numSphereVertices;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -150,7 +152,7 @@ void GuineaPig::BuildSphere(int _latLines, int _longLines) {
 
 	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
 	vertexBufferData.pSysMem = &vertices[0];
-	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_sphereVertBuffer));
+	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, _vertBuffer));
 
 	std::vector<DWORD> indices(m_numSphereFaces * 3);
 
@@ -192,15 +194,15 @@ void GuineaPig::BuildSphere(int _latLines, int _longLines) {
 	}
 
 	for (int l = 0; l < _longLines - 1; ++l) {
-		indices[k] = m_numSphereVertices - 1;
-		indices[k + 1] = (m_numSphereVertices - 1) - (l + 1);
-		indices[k + 2] = (m_numSphereVertices - 1) - (l + 2);
+		indices[k] = _numSphereVertices - 1;
+		indices[k + 1] = (_numSphereVertices - 1) - (l + 1);
+		indices[k + 2] = (_numSphereVertices - 1) - (l + 2);
 		k += 3;
 	}
 
-	indices[k] = m_numSphereVertices - 1;
-	indices[k + 1] = (m_numSphereVertices - 1) - _longLines;
-	indices[k + 2] = m_numSphereVertices - 2;
+	indices[k] = _numSphereVertices - 1;
+	indices[k + 1] = (_numSphereVertices - 1) - _longLines;
+	indices[k + 2] = _numSphereVertices - 2;
 
 	D3D11_BUFFER_DESC indexBufferDesc;
 	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
@@ -214,7 +216,7 @@ void GuineaPig::BuildSphere(int _latLines, int _longLines) {
 	D3D11_SUBRESOURCE_DATA iinitData;
 
 	iinitData.pSysMem = &indices[0];
-	HR(m_d3dDevice->CreateBuffer(&indexBufferDesc, &iinitData, &m_sphereIndexBuffer));
+	HR(m_d3dDevice->CreateBuffer(&indexBufferDesc, &iinitData, _indexBuffer));
 
 }
 
@@ -347,7 +349,7 @@ void GuineaPig::BuildGeometryBuffers() {
 	//UINT stride = sizeof(Vertex3D), offset = 0;
 	//m_d3dImmediateContext->IASetVertexBuffers(0, 1, &m_cubeVertexBuffer, &stride, &offset);
 	
-	BuildSphere(10, 10);
+	BuildSphere(10, 10, &m_sphereVertBuffer, &m_sphereIndexBuffer, m_numSphereVertices, m_numSphereFaces);
 
 	BuildGroundBuffers();
 }
