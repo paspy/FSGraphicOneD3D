@@ -219,7 +219,7 @@ bool D3DApp::InitDirect3D() {
 	ReleaseCOM(factoryPtr);
 
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		adapters[0],	// Multiple adapters
+		adapters[bestAdapterIndex],	// Multiple adapters
 		D3D_DRIVER_TYPE_UNKNOWN,	// Driver Type If you specify the adapter, you cannot specify the driver type
 		NULL,						// Software
 		createDeviceFlags,			// Flags
