@@ -3,6 +3,8 @@ struct BaseLight {
 	float3 direction;
 	float3 position;
 	float  range;
+	float3 spotLightDir;
+	float cone;
 	float3 attenuation;
 	float4 ambient;
 	float4 diffuse;
@@ -80,6 +82,9 @@ float4 main(VS_OUTPUT input) : SV_TARGET {
 
 		//Calculate Light's Falloff factor
 		finalColor /= baseLight.attenuation[0] + (baseLight.attenuation[1] * d) + (baseLight.attenuation[2] * (d*d));
+
+		//Calculate falloff from center to edge of pointlight cone
+		finalColor *= pow(max(dot(-lightToPixelVec, baseLight.spotLightDir), 0.0f), baseLight.cone);
 	}
 
 	//make sure the values are between 1 and 0, and add the ambient

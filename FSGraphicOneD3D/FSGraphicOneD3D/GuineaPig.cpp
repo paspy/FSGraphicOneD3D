@@ -497,14 +497,25 @@ void GuineaPig::BuildTextureAndState() {
 }
 
 void GuineaPig::BuildLighting() {
-	/*m_baseLight.direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_baseLight.diffuse = XMFLOAT4(1.2f, 1.2f, 1.2f, 1.2f);*/
+	// Direction light setting
+	//m_baseLight.direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	//m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	//m_baseLight.diffuse = XMFLOAT4(1.2f, 1.2f, 1.2f, 1.2f);
 
-	m_baseLight.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	m_baseLight.range = 50.0f;
-	m_baseLight.attenuation = XMFLOAT3(0.0f, 0.1f, 0.0f);
-	m_baseLight.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	// Point light setting
+	//m_baseLight.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	//m_baseLight.range = 50.0f;
+	//m_baseLight.attenuation = XMFLOAT3(0.0f, 0.1f, 0.0f);
+	//m_baseLight.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	//m_baseLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// Point light setting
+	m_baseLight.position = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	m_baseLight.spotLightDir = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	m_baseLight.range = 1000.0f;
+	m_baseLight.cone = 20.0f;
+	m_baseLight.attenuation = XMFLOAT3(0.4f, 0.02f, 0.0f);
+	m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_baseLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
@@ -620,16 +631,22 @@ void GuineaPig::UpdateScene(double _dt) {
 	//Set sphereWorld's world space using the transformations
 	m_sphereWorld = scale * translation;
 
-	// Update light
+	// Update point light position
 
 	//Reset Lights Position
-	XMVECTOR lightVector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//XMVECTOR lightVector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//lightVector = XMVector3TransformCoord(lightVector, cubeWorldMat * XMMatrixTranslation(0, 5.0f, 0));
+	//m_baseLight.position.x = XMVectorGetX(lightVector);
+	//m_baseLight.position.y = XMVectorGetY(lightVector);
+	//m_baseLight.position.z = XMVectorGetZ(lightVector);
 
-	lightVector = XMVector3TransformCoord(lightVector, cubeWorldMat * XMMatrixTranslation(0, 5.0f, 0));
+	m_baseLight.position.x = XMVectorGetX(m_camPosition);
+	m_baseLight.position.y = XMVectorGetY(m_camPosition);
+	m_baseLight.position.z = XMVectorGetZ(m_camPosition);
 
-	m_baseLight.position.x = XMVectorGetX(lightVector);
-	m_baseLight.position.y = XMVectorGetY(lightVector);
-	m_baseLight.position.z = XMVectorGetZ(lightVector);
+	m_baseLight.spotLightDir.x = XMVectorGetX(m_camTarget) - m_baseLight.position.x;
+	m_baseLight.spotLightDir.y = XMVectorGetY(m_camTarget) - m_baseLight.position.y;
+	m_baseLight.spotLightDir.z = XMVectorGetZ(m_camTarget) - m_baseLight.position.z;
 
 	// Update objects
 	static double texIdx = 0;
@@ -639,10 +656,9 @@ void GuineaPig::UpdateScene(double _dt) {
 
 	if (rot > 6.26f) rot = 0.0f;
 
+	// update cube animation (TexCoord Index)
 	texIdx += _dt;
-
 	m_cbCubeObject.texIndex = (int)texIdx;
-
 	if ((int)texIdx > 3) texIdx = 0;
 
 	groundWorldMat = XMMatrixIdentity();

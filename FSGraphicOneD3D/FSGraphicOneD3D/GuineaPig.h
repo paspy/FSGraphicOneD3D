@@ -2,7 +2,6 @@
 #include "d3dApp.h"
 #include "DDSTextureLoader/DDSTextureLoader.h"
 
-
 typedef struct Vertex3D {
 	Vertex3D() {}
 	Vertex3D(XMFLOAT3 _pos, XMFLOAT4 _color) : pos(_pos), color(_color) {}
@@ -22,6 +21,8 @@ struct BaseLight {
 	float paddding_1;
 	XMFLOAT3 position;
 	float range;
+	XMFLOAT3 spotLightDir;
+	float cone;
 	XMFLOAT3 attenuation;
 	float paddding_2;
 	XMFLOAT4 ambient;
