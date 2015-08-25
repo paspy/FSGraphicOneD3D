@@ -6,6 +6,7 @@
 #include <DirectXColors.h>
 #include <DirectXPackedVector.h>
 #include <vector>
+#include <fstream>
 #include "D3DUtils.h"
 #include "XTime.h"
 

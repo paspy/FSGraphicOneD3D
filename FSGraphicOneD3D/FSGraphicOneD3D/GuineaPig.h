@@ -1,7 +1,7 @@
 #pragma once
 #include "d3dApp.h"
-
 #include "DDSTextureLoader/DDSTextureLoader.h"
+
 
 typedef struct Vertex3D {
 	Vertex3D() {}
@@ -16,13 +16,6 @@ typedef struct Vertex3D {
 	XMFLOAT3 normal;
 }*Vertex3D_ptr;
 
-
-struct ConstPerObject {
-	XMMATRIX WVP;
-	XMMATRIX World;
-	int texIndex;
-};
-
 struct BaseLight {
 	BaseLight() { ZeroMemory(this, sizeof(BaseLight)); }
 	XMFLOAT3 direction;
@@ -31,9 +24,31 @@ struct BaseLight {
 	XMFLOAT4 diffuse;
 };
 
+struct SurfaceMaterial {
+	wstring matName;
+	XMFLOAT4 difColor;
+	int texArrayIndex;
+	bool hasTexture;
+	bool transparent;
+};
+
+
+// constant buffer structures
+struct ConstPerObject {
+	XMMATRIX WVP;
+	XMMATRIX World;
+	int texIndex;
+	XMFLOAT4 difColor;
+	// need to 4 bytes
+	bool hasTexture;
+	//BOOL hasNormal;
+};
+
 struct ConstPerFrame {
 	BaseLight baseLight;
 };
+
+
 
 class GuineaPig : public D3DApp {
 	public:
@@ -50,6 +65,16 @@ class GuineaPig : public D3DApp {
 		void OnMouseDown(WPARAM _btnState, int _x, int _y);
 		void OnMouseUp	(WPARAM _btnState, int _x, int _y);
 		void OnMouseMove(WPARAM _btnState, int _x, int _y);
+
+		bool CreateModelFromObjFile(wstring _filename,					//.obj filename
+									ID3D11Buffer** _vertBuff,			//mesh vertex buffer
+									ID3D11Buffer** _indexBuff,			//mesh index buffer
+									vector<int>& _subsetIndexStart,		//start index of each subset
+									vector<int>& _subsetMaterialArray,	//index value of material for each subset
+									vector<SurfaceMaterial>& _material,	//vector of material structures
+									int& _subsetCount,					//Number of subsets in mesh
+									bool _isRHCoordSys,					//true if model was created in right hand coord system
+									bool _computeNormals);				//true to compute the normals, false to use the files normals
 
 	private:
 		void BuildSphere(int _latLines, int _longLines);
@@ -128,5 +153,15 @@ class GuineaPig : public D3DApp {
 		ID3D11RasterizerState			*m_cwCullingMode		= nullptr;
 		ID3D11RasterizerState			*m_ccwCullingMode		= nullptr;
 
+		// obj loader
+		ID3D11Buffer					*m_meshVertBuff;
+		ID3D11Buffer					*m_meshIndexBuff;
+		XMMATRIX						m_meshWorld;
+		int								m_meshSubsets = 0;
+		vector<int>						m_meshSubsetIndexStart;
+		vector<int>						m_meshSubsetTexture;
+		vector<SurfaceMaterial>			m_materials;
+		vector<ID3D11ShaderResourceView*> m_meshShaderResView;
+		vector<wstring>					m_textureNameArray;
 
 };

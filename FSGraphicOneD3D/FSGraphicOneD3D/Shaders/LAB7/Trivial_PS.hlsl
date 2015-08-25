@@ -5,6 +5,15 @@ struct BaseLight {
 	float4 diffuse;
 };
 
+cbuffer ConstPerObject {
+	float4x4 WVP;
+	float4x4 World;
+	int texIndex;
+
+	float4 difColor;
+	bool hasTexture;
+};
+
 cbuffer ConstPerFrame {
 	BaseLight baseLight;
 };
@@ -21,6 +30,13 @@ struct VS_OUTPUT {
 
 float4 main(VS_OUTPUT input) : SV_TARGET {
 	input.Normal = normalize(input.Normal);
+
+	////Set diffuse color of material
+	//float4 diffuse = difColor;
+
+	////If material has a diffuse texture map, set it now
+	//if (hasTexture == true)
+	//	diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
 
 	float4 rawDiffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
 	float4 diffuse;

@@ -3,6 +3,9 @@ cbuffer ConstPerObject {
 	float4x4 WVP;
 	float4x4 World;
 	int texIndex;
+
+	float4 difColor;
+	bool hasTexture;
 };
 
 // textures!
