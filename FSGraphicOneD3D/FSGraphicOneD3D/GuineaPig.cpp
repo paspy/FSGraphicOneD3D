@@ -497,9 +497,15 @@ void GuineaPig::BuildTextureAndState() {
 }
 
 void GuineaPig::BuildLighting() {
-	m_baseLight.direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	/*m_baseLight.direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	m_baseLight.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_baseLight.diffuse = XMFLOAT4(1.2f, 1.2f, 1.2f, 1.2f);
+	m_baseLight.diffuse = XMFLOAT4(1.2f, 1.2f, 1.2f, 1.2f);*/
+
+	m_baseLight.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	m_baseLight.range = 50.0f;
+	m_baseLight.attenuation = XMFLOAT3(0.0f, 0.1f, 0.0f);
+	m_baseLight.ambient = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	m_baseLight.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void GuineaPig::BuildShader() {
@@ -613,6 +619,17 @@ void GuineaPig::UpdateScene(double _dt) {
 
 	//Set sphereWorld's world space using the transformations
 	m_sphereWorld = scale * translation;
+
+	// Update light
+
+	//Reset Lights Position
+	XMVECTOR lightVector = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
+	lightVector = XMVector3TransformCoord(lightVector, cubeWorldMat * XMMatrixTranslation(0, 5.0f, 0));
+
+	m_baseLight.position.x = XMVectorGetX(lightVector);
+	m_baseLight.position.y = XMVectorGetY(lightVector);
+	m_baseLight.position.z = XMVectorGetZ(lightVector);
 
 	// Update objects
 	static double texIdx = 0;

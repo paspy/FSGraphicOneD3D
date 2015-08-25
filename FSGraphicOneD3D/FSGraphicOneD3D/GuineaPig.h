@@ -19,7 +19,11 @@ typedef struct Vertex3D {
 struct BaseLight {
 	BaseLight() { ZeroMemory(this, sizeof(BaseLight)); }
 	XMFLOAT3 direction;
-	float paddding;
+	float paddding_1;
+	XMFLOAT3 position;
+	float range;
+	XMFLOAT3 attenuation;
+	float paddding_2;
 	XMFLOAT4 ambient;
 	XMFLOAT4 diffuse;
 };
@@ -154,8 +158,8 @@ class GuineaPig : public D3DApp {
 		ID3D11RasterizerState			*m_ccwCullingMode		= nullptr;
 
 		// obj loader
-		ID3D11Buffer					*m_meshVertBuff;
-		ID3D11Buffer					*m_meshIndexBuff;
+		ID3D11Buffer					*m_meshVertBuff			= nullptr;
+		ID3D11Buffer					*m_meshIndexBuff		= nullptr;
 		XMMATRIX						m_meshWorld;
 		int								m_meshSubsets = 0;
 		vector<int>						m_meshSubsetIndexStart;
