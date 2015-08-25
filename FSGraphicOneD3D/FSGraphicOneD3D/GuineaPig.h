@@ -13,6 +13,9 @@ typedef struct Vertex3D {
 	XMFLOAT4 color;
 	XMFLOAT2 texCoord;
 	XMFLOAT3 normal;
+	// bump normal mapping
+	XMFLOAT3 tangent;
+	XMFLOAT3 biTangent;
 }*Vertex3D_ptr;
 
 struct BaseLight {
@@ -30,9 +33,12 @@ struct BaseLight {
 };
 
 struct SurfaceMaterial {
+	SurfaceMaterial() : hasNormMap(false), hasTexture(false) {}
 	wstring matName;
 	XMFLOAT4 difColor;
 	int texArrayIndex;
+	int normMapTexArrayIndex;
+	bool hasNormMap;
 	bool hasTexture;
 	bool transparent;
 };
@@ -40,13 +46,14 @@ struct SurfaceMaterial {
 
 // constant buffer structures
 struct ConstPerObject {
+	ConstPerObject() : hasTexture(false), hasNormal(false) {}
 	XMMATRIX WVP;
 	XMMATRIX World;
 	int texIndex;
 	XMFLOAT4 difColor;
 	// need to 4 bytes
 	bool hasTexture;
-	//BOOL hasNormal;
+	bool hasNormal;
 };
 
 struct ConstPerFrame {

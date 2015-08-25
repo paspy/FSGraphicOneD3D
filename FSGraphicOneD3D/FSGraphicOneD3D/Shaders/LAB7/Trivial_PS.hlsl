@@ -17,12 +17,14 @@ cbuffer ConstPerObject {
 
 	float4 difColor;
 	bool hasTexture;
+	bool hasNormMap;
 };
 
 cbuffer ConstPerFrame {
 	BaseLight baseLight;
 };
 
+Texture2D ObjNormMap;
 Texture2D ObjTexture;
 SamplerState ObjSamplerState;
 
@@ -32,17 +34,11 @@ struct VS_OUTPUT {
 	float4 Color : COLOR;
 	float2 TexCoord : TEXCOORD;
 	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
 };
 
 float4 main(VS_OUTPUT input) : SV_TARGET {
 	input.Normal = normalize(input.Normal);
-
-	////Set diffuse color of material
-	//float4 diffuse = difColor;
-
-	////If material has a diffuse texture map, set it now
-	//if (hasTexture == true)
-	//	diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
 
 	float4 rawDiffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
 	float4 diffuse;
@@ -51,6 +47,35 @@ float4 main(VS_OUTPUT input) : SV_TARGET {
 	diffuse.g = rawDiffuse.r;
 	diffuse.b = rawDiffuse.a;
 
+	//Set diffuse color of material
+	// diffuse = difColor;
+
+	//If material has a diffuse texture map, set it now
+	//if (hasTexture == true)
+	//	diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
+
+	////If material has a normal map, we can set it now
+	//if (hasNormMap == true) {
+	//	//Load normal from normal map
+	//	float4 normalMap = ObjNormMap.Sample(ObjSamplerState, input.TexCoord);
+
+	//	//Change normal map range from [0, 1] to [-1, 1]
+	//	normalMap = (2.0f*normalMap) - 1.0f;
+
+	//	//Make sure tangent is completely orthogonal to normal
+	//	input.Tangent = normalize(input.Tangent - dot(input.Tangent, input.Normal)*input.Normal);
+
+	//	//Create the biTangent
+	//	float3 biTangent = cross(input.Normal, input.Tangent);
+
+	//	//Create the "Texture Space"
+	//	float3x3 texSpace = float3x3(input.Tangent, biTangent, input.Normal);
+
+	//	//Convert normal from normal map to texture space and store in input.normal
+	//	input.Normal = (normalize(mul((float3)normalMap, texSpace)));
+	//}
+
+	
 	float3 finalColor = float3(0.0f, 0.0f, 0.0f);
 
 	//Create the vector between light position and pixels position

@@ -21,6 +21,7 @@ GuineaPig::GuineaPig(HINSTANCE hinst) : D3DApp(hinst),
 	m_vertexShader(nullptr),
 	m_pixelShader(nullptr) {
 
+	
 }
 
 GuineaPig::~GuineaPig() {
@@ -539,13 +540,14 @@ void GuineaPig::BuildVertexLayout() {
 		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	// Create the input layout
-	HR(m_d3dDevice->CreateInputLayout(vertLayout, 4, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
+	HR(m_d3dDevice->CreateInputLayout(vertLayout, 5, Trivial_VS, sizeof(Trivial_VS), &m_inputLayout));
 
 	D3D11_INPUT_ELEMENT_DESC skyboxVertLayout[] = {
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
@@ -660,6 +662,11 @@ void GuineaPig::UpdateScene(double _dt) {
 	texIdx += _dt;
 	m_cbCubeObject.texIndex = (int)texIdx;
 	if ((int)texIdx > 3) texIdx = 0;
+
+	m_cbCubeObject.hasNormal	= false;
+	m_cbCubeObject.hasTexture	= false;
+	m_cbGroundObject.hasNormal	= false;
+	m_cbGroundObject.hasTexture = false;
 
 	groundWorldMat = XMMatrixIdentity();
 	groundWorldMat = XMMatrixScaling(500.0f, 1.0f, 500.0f)*XMMatrixTranslation(0, 0.0f, 0);
@@ -1414,6 +1421,62 @@ bool GuineaPig::CreateModelFromObjFile(
 								//be using the alpha channel in the diffuse map
 								m_materials[matCount - 1].transparent = true;
 							}
+							//map_bump - bump map (we're usinga normal map though)
+							else if (checkChar == 'b') {
+								checkChar = fileIn.get();
+								if (checkChar == 'u') {
+									checkChar = fileIn.get();
+									if (checkChar == 'm') {
+										checkChar = fileIn.get();
+										if (checkChar == 'p') {
+											std::wstring fileNamePath;
+
+											fileIn.get();	//Remove whitespace between map_bump and file
+
+															//Get the file path - We read the pathname char by char since
+															//pathnames can sometimes contain spaces, so we will read until
+															//we find the file extension
+											bool texFilePathEnd = false;
+											while (!texFilePathEnd) {
+												checkChar = fileIn.get();
+
+												fileNamePath += checkChar;
+
+												if (checkChar == '.') {
+													for (int i = 0; i < 3; ++i)
+														fileNamePath += fileIn.get();
+
+													texFilePathEnd = true;
+												}
+											}
+
+											//check if this texture has already been loaded
+											bool alreadyLoaded = false;
+											for (int i = 0; i < m_textureNameArray.size(); ++i) {
+												if (fileNamePath == m_textureNameArray[i]) {
+													alreadyLoaded = true;
+													m_materials[matCount - 1].normMapTexArrayIndex = i;
+													m_materials[matCount - 1].hasNormMap = true;
+												}
+											}
+
+											//if the texture is not already loaded, load it now
+											if (!alreadyLoaded) {
+												ID3D11ShaderResourceView* tempMeshSRV;
+												/*hr = D3DX11CreateShaderResourceViewFromFile(d3d11Device, fileNamePath.c_str(),
+													NULL, NULL, &tempMeshSRV, NULL);*/
+												hr = CreateDDSTextureFromFile(m_d3dDevice, fileNamePath.c_str(), NULL, &tempMeshSRV);
+												if (SUCCEEDED(hr)) {
+													m_textureNameArray.push_back(fileNamePath.c_str());
+													m_materials[matCount - 1].normMapTexArrayIndex = (int)m_meshShaderResView.size();
+													m_meshShaderResView.push_back(tempMeshSRV);
+													m_materials[matCount - 1].hasNormMap = true;
+												}
+											}
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -1438,6 +1501,8 @@ bool GuineaPig::CreateModelFromObjFile(
 										fileIn >> m_materials[matCount].matName;
 										m_materials[matCount].transparent = false;
 										m_materials[matCount].hasTexture = false;
+										m_materials[matCount].hasNormMap = false;
+										m_materials[matCount].normMapTexArrayIndex = 0;
 										m_materials[matCount].texArrayIndex = 0;
 										matCount++;
 										kdset = false;
@@ -1496,10 +1561,15 @@ bool GuineaPig::CreateModelFromObjFile(
 	//If computeNormals was set to true then we will create our own
 	//normals, if it was set to false we will use the obj files normals
 	if (_computeNormals) {
-		std::vector<XMFLOAT3> tempNormal;
+		vector<XMFLOAT3> tempNormal;
 
 		//normalized and unnormalized normals
 		XMFLOAT3 unnormalized = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+		//tangent stuff
+		vector<XMFLOAT3> tempTangent;
+		XMFLOAT3 tangent = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		float tcU1, tcV1, tcU2, tcV2;
 
 		//Used to get vectors (sides) from the position of the verts
 		float vecX, vecY, vecZ;
@@ -1525,10 +1595,26 @@ bool GuineaPig::CreateModelFromObjFile(
 															//Cross multiply the two edge vectors to get the un-normalized face normal
 			XMStoreFloat3(&unnormalized, XMVector3Cross(edge1, edge2));
 			tempNormal.push_back(unnormalized);			//Save unormalized normal (for normal averaging)
+
+			//Find first texture coordinate edge 2d vector
+			tcU1 = vertices[indices[(i * 3)]].texCoord.x - vertices[indices[(i * 3) + 2]].texCoord.x;
+			tcV1 = vertices[indices[(i * 3)]].texCoord.y - vertices[indices[(i * 3) + 2]].texCoord.y;
+
+			//Find second texture coordinate edge 2d vector
+			tcU2 = vertices[indices[(i * 3) + 2]].texCoord.x - vertices[indices[(i * 3) + 1]].texCoord.x;
+			tcV2 = vertices[indices[(i * 3) + 2]].texCoord.y - vertices[indices[(i * 3) + 1]].texCoord.y;
+
+			//Find tangent using both tex coord edges and position edges
+			tangent.x = (tcV1 * XMVectorGetX(edge1) - tcV2 * XMVectorGetX(edge2)) * (1.0f / (tcU1 * tcV2 - tcU2 * tcV1));
+			tangent.y = (tcV1 * XMVectorGetY(edge1) - tcV2 * XMVectorGetY(edge2)) * (1.0f / (tcU1 * tcV2 - tcU2 * tcV1));
+			tangent.z = (tcV1 * XMVectorGetZ(edge1) - tcV2 * XMVectorGetZ(edge2)) * (1.0f / (tcU1 * tcV2 - tcU2 * tcV1));
+
+			tempTangent.push_back(tangent);
 		}
 
 		//Compute vertex normals (normal Averaging)
 		XMVECTOR normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+		XMVECTOR tangentSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 		int facesUsing = 0;
 		float tX;
 		float tY;
@@ -1546,23 +1632,37 @@ bool GuineaPig::CreateModelFromObjFile(
 					tZ = XMVectorGetZ(normalSum) + tempNormal[j].z;
 
 					normalSum = XMVectorSet(tX, tY, tZ, 0.0f);	//If a face is using the vertex, add the unormalized face normal to the normalSum
+					
+					//We can reuse tX, tY, tZ to sum up tangents
+					tX = XMVectorGetX(tangentSum) + tempTangent[j].x;
+					tY = XMVectorGetY(tangentSum) + tempTangent[j].y;
+					tZ = XMVectorGetZ(tangentSum) + tempTangent[j].z;
+
+					tangentSum = XMVectorSet(tX, tY, tZ, 0.0f); //sum up face tangents using this vertex
 					facesUsing++;
 				}
 			}
 
 			//Get the actual normal by dividing the normalSum by the number of faces sharing the vertex
 			normalSum = normalSum / (float)facesUsing;
+			tangentSum = tangentSum / (float)facesUsing;
 
 			//Normalize the normalSum vector
 			normalSum = XMVector3Normalize(normalSum);
+			tangentSum = XMVector3Normalize(tangentSum);
 
 			//Store the normal in our current vertex
 			vertices[i].normal.x = XMVectorGetX(normalSum);
 			vertices[i].normal.y = XMVectorGetY(normalSum);
 			vertices[i].normal.z = XMVectorGetZ(normalSum);
 
+			vertices[i].tangent.x = XMVectorGetX(tangentSum);
+			vertices[i].tangent.y = XMVectorGetY(tangentSum);
+			vertices[i].tangent.z = XMVectorGetZ(tangentSum);
+
 			//Clear normalSum and facesUsing for next vertex
 			normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+			tangentSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 			facesUsing = 0;
 
 		}
@@ -1600,6 +1700,4 @@ bool GuineaPig::CreateModelFromObjFile(
 	HR(m_d3dDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, _vertBuff));
 
 	return true;
-
-	return false;
 }
